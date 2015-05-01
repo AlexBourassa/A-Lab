@@ -42,9 +42,9 @@ class Module_Container(_gui.QMainWindow):
         _gui.QMainWindow.__init__(self)
         
         #Set some docking options
-#        self.setTabPosition( _core.Qt.TopDockWidgetArea , _gui.QTabWidget.North )
-#        self.setDockOptions( _gui.QMainWindow.ForceTabbedDocks )
-        self.setDockOptions(_gui.QMainWindow.AnimatedDocks | _gui.QMainWindow.AllowNestedDocks)
+        self.setDockOptions(_gui.QMainWindow.AnimatedDocks | 
+                            _gui.QMainWindow.AllowNestedDocks | 
+                            _gui.QMainWindow.AllowTabbedDocks)
         
         #Initialize some variables
         self.modules = dict()
@@ -93,22 +93,23 @@ class Module_Container(_gui.QMainWindow):
                 suffix = str(1+int(suffix))
         module_name += suffix
             
-        #Add the widgets to the list
-        self.modules[module_name] = module_widget
-        self._docked_widgets[module_name] = d = Docked_Module(module_name)
+        #Create Dock Widget
+        d = Docked_Module(module_name)
         d.setWidget(module_widget)
         d.setObjectName(module_name)
         
         #Add the dock widget to the container
         if initial_pos == None:
             self.addDockWidget(_core.Qt.TopDockWidgetArea, d)
-            self._docked_widgets[module_name].hide()
+            d.hide()
         else:
             self.addDockWidget(initial_pos, d)
-            
-
+        
+        #Add the widgets to the list
+        self.modules[module_name] = module_widget
+        self._docked_widgets[module_name] = d
         self.moduleAdded.emit(module_name)
-        #self.emit(self.moduleAdded, module_name)
+
          
     def closeEvent(self, event):
         """

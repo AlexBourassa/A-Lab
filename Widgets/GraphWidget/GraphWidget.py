@@ -14,7 +14,7 @@ from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
 import pyqtgraph as _pg
-import GraphTrace
+from GraphTrace import GraphTrace
 
 
 class GraphWidget(_gui.QWidget):
@@ -38,7 +38,7 @@ class GraphWidget(_gui.QWidget):
 
         #Raise error is essential function not implemented
         essential_methods = ['__iter__', '__len__', '__getitem__', '__setitem__',
-                             'addTrace', 'removeTrace', 'getTraceData', 'setTraceData']
+                             'addTrace', 'removeTrace', '_setTraceData']
         for method in essential_methods:
             if not method in dir(self):
                 raise Exception(method + " not implemented in the subclass of GraphWidget")
@@ -62,6 +62,13 @@ class GraphWidget(_gui.QWidget):
         #Add Actions
         self.menu['File']['Hide'] = self.menu['File']['_QMenu'].addAction('Hide')
         self.menu['File']['Hide'].triggered.connect(lambda: self.hide_signal.emit())
+        
+    def copyTrace(self, trace):
+        """
+        This takes in a GraphTrace object and uses it to create a new trace
+        """
+        x,y= trace.getData()
+        self.addTrace(trace.name, x=x, y=y, **trace.kwargs)
 		
 
 class PyQtGraphWidget(GraphWidget):
@@ -90,6 +97,9 @@ class PyQtGraphWidget(GraphWidget):
         #Build Menu
         self.buildMenu()
         
+        #Do some additional init
+        self.legend = self.plot_item.addLegend()
+        
     def addTrace(self, name, **kwargs):
         """
         Create a new trace with name ID <name>.
@@ -103,34 +113,36 @@ class PyQtGraphWidget(GraphWidget):
         """
         #Make sure no module_name is used twice
         suffix = ''
-        while name+suffix in self.modules:
+        while name+suffix in self.traces:
             if suffix == '':
                 suffix = '2'
             else:
                 suffix = str(1+int(suffix))
         name += suffix
+        self.pyqt_traces[name] = self.plot_item.plot(name=name)
         self.traces[name] = GraphTrace(name, **kwargs)
-        self.pyqt_traces[name] = self.plot_item.plot(**kwargs)
+        self.traces[name].newData.connect(self._setTraceData)
+        self.traces[name].newData.emit(name)#SetData once in case data was passed through kwargs
+        
         
         
     def removeTrace(self, name):
         """
         Remove a trace with name id <name>.
         """
+        self.legend.removeItem(name)
+        self.plot_item.removeItem(self.pyqt_traces[name])
+        del self.pyqt_traces[name]
         del self.traces[name]
         
-    def getTraceData(self, name):
+    def _setTraceData(self, name):
         """
-        Returns the trace data.  Return format is two numpy array
-        ie return x,y
+        Sets new data on the pyqtGraph widget.  This should not be call 
+        externally, but will be called every time a newData signal is emitted
+        by the GraphTrace Object.
         """
-        return self.pyqt_traces[name].xData, self.traces[name].yData
-        
-    def setTraceData(self, name, x, y):
-        """
-        Sets new data for the traces
-        """
-        self.pyqt_traces[name].setData(x=x, y=y, self.traces[name])
+        x, y = self.traces[name].getData(transformed=True)
+        self.pyqt_traces[name].setData(x=x, y=y, **self.traces[name].kwargs)
     
     def __iter__(self):
         return iter(self.traces)

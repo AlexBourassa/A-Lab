@@ -51,8 +51,13 @@ class example(Module_Container):
         
         w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12)
         
-        for wi in [w1,w2,w3]:
+        w4 = TraceManagerWidget()
+        
+        for wi in [w1,w2,w3,w4]:
             self.addModule('mod', wi, initial_pos = _core.Qt.TopDockWidgetArea)
+        
+        w4.addGraph('mod',w1)
+        #w4.addGraph('mod2',w2)        
         
         self.loadUISettings()
         
@@ -81,6 +86,7 @@ if __name__ == "__main__":
     import Widgets.GraphWidget.GraphWidget as _graph
     import Widgets.IPythonConsoleWidget as _ipy
     from Module_Container_Plugins.View_Menu import View_Menu
+    from Widgets.TraceManagerWidget import TraceManagerWidget
     
     
     x = _np.linspace(0,4*_np.pi)
