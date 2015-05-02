@@ -68,7 +68,19 @@ class GraphWidget(_gui.QWidget):
         This takes in a GraphTrace object and uses it to create a new trace
         """
         x,y= trace.getData()
-        self.addTrace(trace.name, x=x, y=y, **trace.kwargs)
+        return self.addTrace(trace.name, x=x, y=y, **trace.kwargs)
+        
+    def __iter__(self):
+        return iter(self.traces)
+        
+    def __len__(self):
+        return len(self.traces)
+        
+    def __getitem__(self, key):
+        return self.traces[key]
+        
+    def __setitem__(self, key, value):
+        self.addTrace(key, **value)
 		
 
 class PyQtGraphWidget(GraphWidget):
@@ -123,6 +135,7 @@ class PyQtGraphWidget(GraphWidget):
         self.traces[name] = GraphTrace(name, **kwargs)
         self.traces[name].newData.connect(self._setTraceData)
         self.traces[name].newData.emit(name)#SetData once in case data was passed through kwargs
+        return self.traces[name]
         
         
         
@@ -144,15 +157,4 @@ class PyQtGraphWidget(GraphWidget):
         x, y = self.traces[name].getData(transformed=True)
         self.pyqt_traces[name].setData(x=x, y=y, **self.traces[name].kwargs)
     
-    def __iter__(self):
-        return iter(self.traces)
-        
-    def __len__(self):
-        return len(self.traces)
-        
-    def __getitem__(self, key):
-        return self.traces[key]
-        
-    def __setitem__(self, key, value):
-        self.addTrace(key, **value)
 

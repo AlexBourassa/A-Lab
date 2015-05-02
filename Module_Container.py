@@ -116,6 +116,7 @@ class Module_Container(_gui.QMainWindow):
         Save some settings under: 
             <default_folder>\settings
         """
+        
         print "Saving state..."
         #Build filename and setting object
         filename = _os.path.join(self.default_folder, 'settings')
@@ -124,6 +125,10 @@ class Module_Container(_gui.QMainWindow):
         #Save values
         settings.setValue('Module_Container/State', self.saveState())
         settings.setValue('Module_Container/Geometry', self.saveGeometry())
+        
+        #Close all modules
+        for m in self.modules.values():
+            m.close()
         
         #Pass on the close event
         super(Module_Container, self).closeEvent(event)

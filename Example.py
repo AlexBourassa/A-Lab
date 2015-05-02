@@ -57,7 +57,7 @@ class example(Module_Container):
             self.addModule('mod', wi, initial_pos = _core.Qt.TopDockWidgetArea)
         
         w4.addGraph('mod',w1)
-        #w4.addGraph('mod2',w2)        
+        w4.addGraph('mod2',w2)        
         
         self.loadUISettings()
         
@@ -92,26 +92,7 @@ if __name__ == "__main__":
     x = _np.linspace(0,4*_np.pi)
     y = _np.cos(x)
     win = example()
-#    #win = Module_Container(default_folder = _os.getcwd())    
-#    
-#    #Create widget 1 with some traces
-#    w1 = _graph.PyQtGraphWidget()
-#    
-#    win.addModule('graph1', w1, initial_pos = _core.Qt.TopDockWidgetArea)
-#    win['graph1']['t1'] = {'x':x, 'y':y, 'pen':'y'}
-#    win['graph1'].addTrace('t2', x=x, y=_np.sin(x), pen='r')
-#    win['graph1'].addTrace('t3', y=x)
-#
-#    w2 = _graph.PyQtGraphWidget()
-#    win.addModule('graph2', w2, initial_pos = _core.Qt.TopDockWidgetArea)
-#    
-#    #w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12) 
-#    #win.addModule('console', w3, initial_pos = _core.Qt.TopDockWidgetArea)
-#    
-#    def test():
-#        print 'alex'
-#        raise Exception("test")
-#    win['graph1'].hide_signal.connect(test)
+
     
     # Runs a new IPython kernel, that begins the qt event loop.
     #

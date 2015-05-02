@@ -14,21 +14,7 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="1">
-    <widget class="QPushButton" name="test_Btn">
-     <property name="text">
-      <string>Test</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QPushButton" name="delete_Btn">
-     <property name="text">
-      <string>Delete Trace</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
+   <item row="0" column="0" colspan="2">
     <widget class="QTreeWidget" name="treeWidget">
      <column>
       <property name="text">
@@ -36,16 +22,6 @@
       </property>
      </column>
     </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QPushButton" name="copyToGraph_Btn">
-     <property name="text">
-      <string>Copy To Graph</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QComboBox" name="copyDest_Combo"/>
    </item>
   </layout>
  </widget>
