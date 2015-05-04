@@ -13,14 +13,14 @@ from Docked_Module import Docked_Module
 
 import os as _os
 
-
+default_params = {'autoSave':True}
 
 class Module_Container(_gui.QMainWindow):
     
     moduleAdded = _core.Signal(str)
     moduleRemoved = _core.Signal(str)
     
-    def __init__(self, default_folder=None):
+    def __init__(self, default_folder=None, **kwargs):
         """
         This is the main object that will contain all the modules.
         This class contains only the bare minimum.
@@ -49,6 +49,9 @@ class Module_Container(_gui.QMainWindow):
         #Initialize some variables
         self.modules = dict()
         self._docked_widgets = dict()
+        for k in default_params:
+            if not k in kwargs: kwargs[k] = default_params[k]
+        self.params = kwargs
         
         #Build menu
         self.buildMenu()
@@ -116,7 +119,13 @@ class Module_Container(_gui.QMainWindow):
         Save some settings under: 
             <default_folder>\settings
         """
+        if self.params['autoSave']:
+            self.saveUI()
         
+        #Pass on the close event
+        super(Module_Container, self).closeEvent(event)
+        
+    def saveUI(self):
         print "Saving state..."
         #Build filename and setting object
         filename = _os.path.join(self.default_folder, 'settings')
@@ -129,9 +138,6 @@ class Module_Container(_gui.QMainWindow):
         #Close all modules
         for m in self.modules.values():
             m.close()
-        
-        #Pass on the close event
-        super(Module_Container, self).closeEvent(event)
         
         
     def loadUISettings(self):

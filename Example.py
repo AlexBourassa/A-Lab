@@ -60,6 +60,7 @@ class example(Module_Container):
         w4.addGraph('mod2',w2)        
         
         self.loadUISettings()
+        self.params['autoSave'] = True        
         
         self.show()
         
@@ -91,7 +92,7 @@ if __name__ == "__main__":
     
     x = _np.linspace(0,4*_np.pi)
     y = _np.cos(x)
-    win = example()
+    win = example(autoSave=False)
 
     
     # Runs a new IPython kernel, that begins the qt event loop.

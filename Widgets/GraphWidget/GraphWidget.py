@@ -3,6 +3,8 @@
 Created on Thu Apr 23 14:37:38 2015
 
 @author: Alex
+
+@TODO: Add a plugin that can import data from file and save them
 """
 #import os as _os
 #_os.environ['QT_API'] = 'pyside'# 'pyqt' for PyQt4 / 'pyside' for PySide
@@ -15,7 +17,8 @@ from PyQt4 import QtCore as _core
 
 import pyqtgraph as _pg
 from GraphTrace import GraphTrace
-
+from Trace_View_Menu import Trace_View_Menu
+from Fitter import Fitter
 
 class GraphWidget(_gui.QWidget):
     """
@@ -26,22 +29,25 @@ class GraphWidget(_gui.QWidget):
     """
     
     #Explicit Signal List
-    hide_signal = _core.Signal()
+    traceAdded   = _core.Signal(str)
+    traceRemoved = _core.Signal(str)
+    hide_signal  = _core.Signal()
     
     
     def __init__(self, parent=None, **kwargs):
         #super(GraphWidget, self).__init__(parent=parent)
         _gui.QWidget.__init__(self, parent=parent)
-        
+
         #This variable will contain all the generic traces
         self.traces = dict()
+        self.plugins = dict()
 
         #Raise error is essential function not implemented
         essential_methods = ['__iter__', '__len__', '__getitem__', '__setitem__',
-                             'addTrace', 'removeTrace', '_setTraceData']
+                             'addTrace', 'removeTrace', '_setTraceData', 'setTraceVisible']
         for method in essential_methods:
             if not method in dir(self):
-                raise Exception(method + " not implemented in the subclass of GraphWidget")
+                raise NotImplementedError(method + " not implemented in the subclass of GraphWidget")
          
                 
         
@@ -63,12 +69,25 @@ class GraphWidget(_gui.QWidget):
         self.menu['File']['Hide'] = self.menu['File']['_QMenu'].addAction('Hide')
         self.menu['File']['Hide'].triggered.connect(lambda: self.hide_signal.emit())
         
+    def addStandardPlugins(self):
+        #Add View Menu
+        self.plugins['View'] = Trace_View_Menu(self)
+        
+        #Add a fitter
+        self.plugins['Fitter'] = Fitter(self, pen='g')
+        
     def copyTrace(self, trace):
         """
         This takes in a GraphTrace object and uses it to create a new trace
         """
         x,y= trace.getData()
         return self.addTrace(trace.name, x=x, y=y, **trace.kwargs)
+        
+    def getRegionData(self, trace_name, verbose=True, **kw):
+        x,y = self.traces[trace_name].getData()
+        if verbose:
+            print "No getRegionData() function defined for this GraphWidget.  Returning all data..."
+        return x,y
         
     def __iter__(self):
         return iter(self.traces)
@@ -111,6 +130,8 @@ class PyQtGraphWidget(GraphWidget):
         
         #Do some additional init
         self.legend = self.plot_item.addLegend()
+        self.addStandardPlugins()
+        
         
     def addTrace(self, name, **kwargs):
         """
@@ -135,6 +156,9 @@ class PyQtGraphWidget(GraphWidget):
         self.traces[name] = GraphTrace(name, **kwargs)
         self.traces[name].newData.connect(self._setTraceData)
         self.traces[name].newData.emit(name)#SetData once in case data was passed through kwargs
+        self.pyqt_traces[name].visible = True
+        
+        self.traceAdded.emit(name)
         return self.traces[name]
         
         
@@ -147,6 +171,26 @@ class PyQtGraphWidget(GraphWidget):
         self.plot_item.removeItem(self.pyqt_traces[name])
         del self.pyqt_traces[name]
         del self.traces[name]
+        self.traceRemoved.emit(name)
+        
+    def setTraceVisible(self, name, visible=True):
+        """
+        Show/Hide a trace by removing the items from the plot.  This should not
+        be called externally as it migth results in multiple traces or an error.
+        Instead use setVisible on the Trace.
+        """
+        if self.pyqt_traces[name].visible == visible:
+            return
+        if visible:
+            self.plot_item.addItem(self.pyqt_traces[name])
+            #self.legend.addItem(self.pyqt_traces[name], name)
+        else:
+            self.legend.removeItem(self.pyqt_traces[name])
+            self.legend.removeItem(name)
+            self.plot_item.removeItem(self.pyqt_traces[name])
+            print "removed"
+        self.pyqt_traces[name].visible = visible
+            
         
     def _setTraceData(self, name):
         """

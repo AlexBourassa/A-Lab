@@ -5,7 +5,10 @@ Created on Thu Apr 30 16:00:09 2015
 @author: Alex
 
 @TODO:  There is probably a better way to find out what changed i the tree
-        without scanning the whole tree...
+        without scanning the whole tree... (I added getTreeItemNameList which
+        migth simplify the function)
+        
+@TODO:  Copy and delete feature (perhaps using keyboard Ctrl-C/Ctrl-V and Delete)        
         
 @TODO:  Add a drop from file feature.  Drag a file to the widget and it loads
         it and add it to the graph.
@@ -47,11 +50,16 @@ class TraceManagerWidget(_gui.QWidget):
         nothingChanged = True
         for i in self.items:
             if self.items[i].hasChanged():
-                print i + " has changed!"
                 addLists[i], removeLists[i] = self.items[i].getChanges()
+                print addLists[i], removeLists[i]
                 nothingChanged = False
+            else:
+                addLists[i], removeLists[i] = [], []
+            print addLists[i], removeLists[i]
                 
         if nothingChanged: return
+            
+        
         
         #For each graph
         for i in self.items:
@@ -64,14 +72,15 @@ class TraceManagerWidget(_gui.QWidget):
                     #from graph j
                     if trc in self.items[j]:
                         #Change the trace to the other graph
-                        self.widgets[i].copyTrace(self.widgets[j][trc])
+                        traceObj = self.widgets[i].copyTrace(self.widgets[j][trc])
                         self.widgets[j].removeTrace(trc)
                         
                         #Switch the TracTreeItem to the other list
-                        self.items[i].trace_items[trc] = self.items[j].trace_items.pop(trc)
+                        if trc in self.items[j].trace_items:
+                            self.items[i].trace_items[traceObj.name] = self.items[j].trace_items.pop(trc)
                         
                         #Remove it from the removeList and go to the next trace without error
-                        removeLists[j].remove(trc)
+                        if trc in removeLists[j]: removeLists[j].remove(trc)
                         foundTrc = True
                         break
                 if not foundTrc: 
@@ -113,21 +122,30 @@ class GraphTreeWidgetItem(_gui.QTreeWidgetItem):
         self.setFlags(self.flags() & ~_core.Qt.ItemIsDragEnabled)
         self.name = graph_name
         self.parent = parent
+        self.graph = self.parent.widgets[self.name]
         self.trace_items = dict()
+        
+        self.graph.traceAdded.connect(lambda x: self.updateTreeItem())
+        self.graph.traceRemoved.connect(lambda x: self.updateTreeItem())        
         
         self.updateTreeItem()
         
-    def emitDataChanged(self):
-        print self.name
-        
     def updateTreeItem(self):
         """
-        Add the missing elements to the item
+        Add the missing elements to the item, and remove the extra ones
         """
-        #self.trace_items = dict()
-        for trc in self.parent.widgets[self.name].traces.keys():
+        removeList = self.getTreeItemNameList()
+        #Add the missing items
+        for trc in self.graph.traces.keys():
             if not trc in self.trace_items:
                 self.trace_items[trc] = TraceTreeWidgetItem(self, trc)
+            elif trc in removeList:
+                removeList.remove(trc)
+        
+        #Remove the extra items
+        for trc in removeList:
+            if trc in self.trace_items: self.removeChild(self.trace_items.pop(trc))
+        
             
     def hasChanged(self):
         return len(self.trace_items) != self.childCount()
@@ -144,9 +162,18 @@ class GraphTreeWidgetItem(_gui.QTreeWidgetItem):
             if not self.child(i).name in self.trace_items:
                 addList.append(self.child(i).name)
             #Else since it appears in the dict it has not been removed
-            else:
+            elif self.child(i).name in removeList:
                 removeList.remove(self.child(i).name)
+            #Handles the case were a second trace of the same name was added
+            else:
+                addList.append(self.child(i).name)
         return addList, removeList
+        
+    def getTreeItemNameList(self):
+        ans = list()
+        for i in range(self.childCount()):
+            ans.append(self.child(i).name)
+        return ans
 
             
     def __iter__(self):
