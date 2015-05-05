@@ -11,6 +11,7 @@ Most of the code comes from Spyder's code (ipythonconsole.py).
 I made some quick modification to make it work, but that migth have broken some things...
 
 @TODO:  Add a timer that sends an empty str to be printed out every periodically
+        
         to ensure no prints are miss
 """
 import sys, os, atexit

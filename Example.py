@@ -38,9 +38,9 @@ class example(Module_Container):
 
         #Create widget 1 with some traces
         w1 = _graph.PyQtGraphWidget()
-        w1['t1'] = {'x':x, 'y':y, 'pen':'y'}
-        w1.addTrace('t2', x=x, y=_np.sin(x), pen='r')
-        w1.addTrace('t3', y=x)
+        w1['t'] = {'x':x, 'y':y, 'pen':'y'}
+        w1.addTrace('t', x=x, y=_np.sin(x), pen='r')
+        w1.addTrace('t', y=x)
         
         def test():
             print 'alex'
