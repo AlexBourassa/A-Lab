@@ -40,8 +40,12 @@ class Fitter(Graph_Widget_Plugin):
     def createNewFitter(self, **kwargs):
         #Control Pannel Widget
         self.control_widget = Fitter_Control_Widget(self.graph, **kwargs)
-        self.control_widget.show()
         
+        # Try adding it as a docked widget, works if the parent of the graph
+        # widget was given and is a Module_Container.  If it fails simply show
+        # the widget... (still works but less pretty...)
+        try: self.graph.parent().requestNewModule.emit("Fitter", self.control_widget, _core.Qt.LeftDockWidgetArea) 
+        except: self.control_widget.show()
 
 
 
@@ -309,4 +313,6 @@ class Fitter_Control_Widget(_gui.QWidget):
     def closeEvent(self, event):
         for trc in self.fitTraces:
             if trc in self.graph: self.graph.removeTrace(trc)
+        try: self.graph.parent().requestSelfDestroy.emit()
+        except: pass
         _gui.QWidget.closeEvent(self, event)

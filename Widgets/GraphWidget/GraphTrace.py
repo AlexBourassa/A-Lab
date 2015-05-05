@@ -28,11 +28,19 @@ class GraphTrace(_core.QObject):
             else:
                 self.xData = _np.linspace(0, len(self.yData)-1, num=len(self.yData))
             self.newData.emit(self.name)
+            
+        if 'feeder' in kwargs: self.setNewFeeder(kwargs['feeder'])
         
     def setData(self, x, y):
         self.xData = _np.array(x)
         self.yData = _np.array(y)
         self.newData.emit(self.name)
+        
+    def setNewFeeder(self, feeder):
+        #TODO>..................................
+#        if 'feeder' in kwargs: feeder.newData.
+#        feeder.newData.connect(self.setData)
+        return
         
         
     def getData(self, transformed=True):
@@ -44,3 +52,13 @@ class GraphTrace(_core.QObject):
         
     def transform(self, x, y):
         return x,y
+        
+        
+class TraceFeeder(_core.QObject):
+    newData = _core.Signal(_np.ndarray, _np.ndarray)    
+    
+    def __init__(self, *args, **kwargs):
+        _core.QObject.__init__(self, **kwargs)
+        
+    def setData(self, x, y):
+        self.newData.emit(x,y)

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Alex
+
+@TODO: Doesn't delete entry when moduleRemoved triggers
 """
 
 from Module_Container_Plugin import *

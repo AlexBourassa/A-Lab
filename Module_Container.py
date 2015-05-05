@@ -75,9 +75,17 @@ class Module_Container(_gui.QMainWindow):
         self.menu['File']['Close'] = self.menu['File']['_QMenu'].addAction('Close')
         self.menu['File']['Close'].triggered.connect(lambda: self.close())
                 
+    def removeModule(self, name):
+        try:
+            mod = self.modules.pop(name)
+            d = self._docked_widgets(name)
+            del mod
+            del d
+        except:
+            pass
+        self.moduleRemoved.emit(name)
         
-        
-    def addModule(self, module_name, module_widget, initial_pos=None):
+    def addModule(self, module_name, module_widget, initial_pos=_core.Qt.TopDockWidgetArea):
         """
         Add a widget to the main containner
         
@@ -87,6 +95,8 @@ class Module_Container(_gui.QMainWindow):
             _core.Qt.LeftDockWidgetArea
             _core.Qt.RightDockWidgetArea
         """
+        print module_name, module_widget, initial_pos
+        if self.params['autoSave']: self.saveUI()
         #Make sure no module_name is used twice
         suffix = ''
         while module_name+suffix in self.modules:
@@ -112,15 +122,24 @@ class Module_Container(_gui.QMainWindow):
         self.modules[module_name] = module_widget
         self._docked_widgets[module_name] = d
         self.moduleAdded.emit(module_name)
-
+        
+        #Load the UI
+        self.loadUISettings()
+        
+        #Connect signal to allow for requests
+        d.requestNewModule.connect(lambda name, widget, pos: self.addModule(module_name + ' ' + name, widget, initial_pos=pos))
+        d.requestSelfDestroy.connect(lambda: self.removeModule(module_name))
          
     def closeEvent(self, event):
         """
         Save some settings under: 
             <default_folder>\settings
         """
-        if self.params['autoSave']:
-            self.saveUI()
+        if self.params['autoSave']: self.saveUI()
+            
+        #Close all modules
+        for m in self.modules.values():
+            m.close()
         
         #Pass on the close event
         super(Module_Container, self).closeEvent(event)
@@ -134,10 +153,6 @@ class Module_Container(_gui.QMainWindow):
         #Save values
         settings.setValue('Module_Container/State', self.saveState())
         settings.setValue('Module_Container/Geometry', self.saveGeometry())
-        
-        #Close all modules
-        for m in self.modules.values():
-            m.close()
         
         
     def loadUISettings(self):

@@ -37,7 +37,7 @@ class example(Module_Container):
         self.plugins['View_Menu'] = View_Menu(self)
 
         #Create widget 1 with some traces
-        w1 = _graph.PyQtGraphWidget()
+        w1 = _graph.PyQtGraphWidget(parent = self)
         w1['t'] = {'x':x, 'y':y, 'pen':'y'}
         w1.addTrace('t', x=x, y=_np.sin(x), pen='r')
         w1.addTrace('t', y=x)
@@ -47,7 +47,7 @@ class example(Module_Container):
             
         w1.hide_signal.connect(test)
         
-        w2 = _graph.PyQtGraphWidget()
+        w2 = _graph.PyQtGraphWidget(parent = self)
         
         w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12)
         
