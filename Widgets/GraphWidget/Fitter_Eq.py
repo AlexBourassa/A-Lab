@@ -1,21 +1,34 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Jul 13 21:09:31 2014
-
 @author: Alexandre Bourassa
+
+@TODO:  Auto Generate the fitFct dict
 """
 
 import numpy as _np
 
 from scipy.optimize import leastsq
 
-
+#import inspect as _inspect
+#all_functions = _inspect.getmembers()
+#fitFct = dict()
+#listing =  dir()
+#print listing
+#for class_name in listing:
+#    print class_name
+#    print eval(class_name)
+#    try: 
+#        class_inst = eval(class_name)
+#        if Generic_Fct in class_inst.__bases__: 
+#            print class_name
+#            fitFct[class_name] = class_inst()
+#    except: pass
 #!!!  Edit this when adding or removing functions  !!!
 def getAllFitFct():
     """
     Returns a dictionary associting each fit fct with an instance of it's class
     """
-    fitFct = {'Laurentzian':Laurentzian(), 'Gaussian':Gaussian(), 'Cos':Cos(), 'LaurentzianWithConstInterference':LaurentzianWithConstInterference(), 'Linear':Linear(), 'VillQintr':VillQintr(), 'Power':Power(), 'Other':Other()}
+    fitFct = {'Laurentzian':Laurentzian(), 'Gaussian':Gaussian(), 'Cos':Cos(), 'LaurentzianWithConstInterference':LaurentzianWithConstInterference(), 'Linear':Linear(), 'VillQintr':VillQintr(), 'Power':Power()}    
     return fitFct
 
 class Generic_Fct():
@@ -470,7 +483,6 @@ class Cos(Generic_Fct):
         """
         Apply the function with parameter p over x
         """
-        
         #Unpack the parameters
         A, y0, f, phi = p
         
@@ -480,9 +492,6 @@ class Cos(Generic_Fct):
         return fit
         
     def getLatex(self):
-        """
-        Returns the LaTeX version of the equation
-        """
         return r'$y=A\cdot\cos\left(2\pi f\cdot x+\phi\right)+y_{0}$'     
 
 #------------------------------------------------------------------------------
@@ -508,16 +517,28 @@ class Linear(Generic_Fct):
         return {'m':m, 'b':b}
         
     def getLatex(self):
-        return r'$y=ax+b$'
+        return r'$y=mx+b$'
         
     def calcOutput(self, p):
         outVal = p
         return outVal
         
 
+#------------------------------------------------------------------------------
+#                       POWER function
+#------------------------------------------------------------------------------  
 
-
-
+class Power(Generic_Fct):
+    
+    def getParamList(self):          
+        return ['A','y','B']
+             
+    def applyEq(self, p, x):
+        #Unpack the parameters
+        A,y,B = p
+        #Apply the fct
+        fit = A*x**y+B              
+        return fit
 
 
 
@@ -623,29 +644,3 @@ class VillQintr(Generic_Fct):
         outputVal['lambda'] = _np.sqrt((1.0/12.0)*(p['E']/p['sigma'])*(p['h']/p['L'])**2)
         return outputVal
         
-class Power(Generic_Fct):
-    
-    def getParamList(self):          
-        return ['A','y','B']
-             
-    def applyEq(self, p, x):
-        #Unpack the parameters
-        A,y,B = p
-        #Apply the fct
-        fit = A*x**y+B              
-        return fit
-        
-class Other(Generic_Fct):
-    
-    def getParamList(self):          
-        return ['B/A','C/B']
-             
-    def applyEq(self, p, x):
-        #Unpack the parameters
-        a,b = p
-        #Apply the fct
-        fit = a*(x+b)/(x**2)              
-        return fit
-    
-    def calcOutput(self, p):
-        return {'C/A':p['B/A']*p['C/B']}

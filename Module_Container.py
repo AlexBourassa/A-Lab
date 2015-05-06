@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Apr 28 18:36:53 2015
-
 @author: Alex
 
-@TODO: Make 
+@BUG: For some reason, floating dock widget do not get restore to there original sizes...
 """
 
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 from Docked_Module import Docked_Module
+from Module_Container_Plugins.View_Menu import View_Menu
 
 import os as _os
 
-default_params = {'autoSave':True}
+default_params = {'autoSave':True, 'standardPlugins':True}
 
 class Module_Container(_gui.QMainWindow):
     
@@ -49,6 +48,7 @@ class Module_Container(_gui.QMainWindow):
         #Initialize some variables
         self.modules = dict()
         self._docked_widgets = dict()
+        self.plugins = dict()
         for k in default_params:
             if not k in kwargs: kwargs[k] = default_params[k]
         self.params = kwargs
@@ -56,7 +56,13 @@ class Module_Container(_gui.QMainWindow):
         #Build menu
         self.buildMenu()
         
+        #Add Some Plugins
+        if kwargs['standardPlugins']: self.addStandardPlugins()
+        
         self.show()
+        
+    def addStandardPlugins(self):
+        self.plugins['View_Menu'] = View_Menu(self)
         
     def buildMenu(self):
         """
@@ -95,7 +101,6 @@ class Module_Container(_gui.QMainWindow):
             _core.Qt.LeftDockWidgetArea
             _core.Qt.RightDockWidgetArea
         """
-        print module_name, module_widget, initial_pos
         if self.params['autoSave']: self.saveUI()
         #Make sure no module_name is used twice
         suffix = ''
@@ -145,7 +150,6 @@ class Module_Container(_gui.QMainWindow):
         super(Module_Container, self).closeEvent(event)
         
     def saveUI(self):
-        print "Saving state..."
         #Build filename and setting object
         filename = _os.path.join(self.default_folder, 'settings')
         settings = _core.QSettings(filename, _core.QSettings.IniFormat)
@@ -153,6 +157,29 @@ class Module_Container(_gui.QMainWindow):
         #Save values
         settings.setValue('Module_Container/State', self.saveState())
         settings.setValue('Module_Container/Geometry', self.saveGeometry())
+        
+        # Save module's values (checks if a saveSettings function is implemented
+        # if so, calls it with the QSettings object)
+        settings.beginGroup('Modules')
+        for mod_name in self.modules:
+            if hasattr(self.modules[mod_name], 'saveSettings'): 
+                settings.beginGroup(mod_name)
+                self.modules[mod_name].saveSettings(settingsObj = settings)
+                #except: pass
+                settings.endGroup()
+                
+                
+        # Save plugins's values (checks if a saveSettings function is implemented
+        # if so, calls it with the QSettings object)
+        settings.beginGroup('Plugins')
+        for plug_name in self.plugins:
+            if hasattr(self.plugins[plug_name], 'saveSettings'): 
+                settings.beginGroup('Plugins')
+                self.plugins[plug_name].saveSettings(settingsObj = settings)
+                #except: pass
+                settings.endGroup()
+        
+        settings.endGroup()
         
         
     def loadUISettings(self):
@@ -162,7 +189,29 @@ class Module_Container(_gui.QMainWindow):
         
         if settings.contains('Module_Container/State') and settings.contains('Module_Container/Geometry'):
             self.restoreState(settings.value('Module_Container/State'))
-            self.restoreGeometry(settings.value('Module_Container/Geometry')) 
+            self.restoreGeometry(settings.value('Module_Container/Geometry'))
+            
+        # Load module's values (checks if a loadSettings function is implemented
+        # if so, calls it with the QSettings object)
+        settings.beginGroup('Modules')
+        for mod_name in self.modules:
+            if hasattr(self.modules[mod_name], 'loadSettings'): 
+                settings.beginGroup(mod_name)
+                self.modules[mod_name].loadSettings(settingsObj = settings)
+                #except: pass
+                settings.endGroup()
+        settings.endGroup()
+                
+        # Load plugins's values (checks if a loadSettings function is implemented
+        # if so, calls it with the QSettings object)
+        settings.beginGroup('Plugins')
+        for plug_name in self.plugins:
+            if hasattr(self.plugins[plug_name], 'loadSettings'):
+                settings.beginGroup(plug_name)
+                self.plugins[plug_name].loadSettings(settingsObj = settings)
+                #except: pass
+                settings.endGroup()
+        settings.endGroup()
         
     
     def __iter__(self):

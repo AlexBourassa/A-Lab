@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Apr 30 16:00:09 2015
-
 @author: Alex
         
 @TODO:  Copy and delete feature (perhaps using keyboard Ctrl-C/Ctrl-V and Delete)        

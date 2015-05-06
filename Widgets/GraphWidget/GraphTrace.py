@@ -37,9 +37,14 @@ class GraphTrace(_core.QObject):
         self.newData.emit(self.name)
         
     def setNewFeeder(self, feeder):
-        #TODO>..................................
-#        if 'feeder' in kwargs: feeder.newData.
-#        feeder.newData.connect(self.setData)
+        #Reset the set data of the feeder
+        if 'feeder' in self.kwargs: 
+            try:
+                self.kwargs['feeder'].setData = type(self.kwargs['feeder']).setData#reconnect to previous function
+            except:
+                self.kwargs['feeder'].setData = lambda: 0#Do nothing
+        feeder.setData = self.setData
+        self.kwargs['feeder'] = feeder
         return
         
         
@@ -53,12 +58,12 @@ class GraphTrace(_core.QObject):
     def transform(self, x, y):
         return x,y
         
-        
-class TraceFeeder(_core.QObject):
-    newData = _core.Signal(_np.ndarray, _np.ndarray)    
-    
+
+# This is a very simple class that allows for the feeder source to be independant
+# from the Trace object.  Another way to do this is to simply use the 
+class Generic_TraceFeeder(_core.QObject):       
     def __init__(self, *args, **kwargs):
         _core.QObject.__init__(self, **kwargs)
         
     def setData(self, x, y):
-        self.newData.emit(x,y)
+        raise NotImplemented("The TraceFeeder.setData(x,y) needs to be associated with a specific trace to do something...From a GraphTrace use setFeeder.")

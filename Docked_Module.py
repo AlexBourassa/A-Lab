@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Apr 30 09:45:07 2015
-
 @author: Alex
 """
 
@@ -17,12 +15,13 @@ class Docked_Module(_gui.QDockWidget):
         _gui.QDockWidget.__init__(self, *args, **kwargs)
         
     def hideEvent(self, event):
+        self.widget().hide()
         self.visibilityChanged.emit(self.isVisible())
         
     def showEvent(self, event):
+        self.widget().show()
         self.visibilityChanged.emit(self.isVisible())
         
     def closeEvent(self, event):
-        print "Closing..."
         self.widget().close()
         _gui.QDockWidget.closeEvent(self, event)

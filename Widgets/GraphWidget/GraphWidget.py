@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Apr 23 14:37:38 2015
-
 @author: Alex
 
 @TODO: Add a plugin that can import data from file and save them
@@ -31,7 +29,6 @@ class GraphWidget(_gui.QWidget):
     #Explicit Signal List
     traceAdded   = _core.Signal(str)
     traceRemoved = _core.Signal(str)
-    hide_signal  = _core.Signal()
     
     
     def __init__(self, parent=None, **kwargs):
@@ -88,6 +85,24 @@ class GraphWidget(_gui.QWidget):
         if verbose:
             print "No getRegionData() function defined for this GraphWidget.  Returning all data..."
         return x,y
+        
+    def saveSettings(self, settingsObj = None, **kwargs):
+        if type(settingsObj) != _core.QSettings:
+            print "No QSetting object was provided"
+        else:
+            for plug_name in self.plugins:
+                settingsObj.beginGroup(plug_name)
+                self.plugins[plug_name].saveSettings(settingsObj)
+                settingsObj.endGroup()
+    
+    def loadSettings(self, settingsObj = None, **kwargs):
+        if type(settingsObj) != _core.QSettings:
+            print "No QSetting object was provided"
+        else:
+            for plug_name in self.plugins:
+                settingsObj.beginGroup(plug_name)
+                self.plugins[plug_name].loadSettings(settingsObj)
+                settingsObj.endGroup()    
         
     def __iter__(self):
         return iter(self.traces)

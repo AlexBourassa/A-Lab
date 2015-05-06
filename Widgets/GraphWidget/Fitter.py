@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Alex
+
+This is based on old code. It works, but may not be optimal or simple...
 """
 
 from Graph_Widget_Plugin import *
@@ -46,6 +48,8 @@ class Fitter(Graph_Widget_Plugin):
         # the widget... (still works but less pretty...)
         try: self.graph.parent().requestNewModule.emit("Fitter", self.control_widget, _core.Qt.LeftDockWidgetArea) 
         except: self.control_widget.show()
+        
+        
 
 
 
@@ -60,6 +64,7 @@ class Fitter_Control_Widget(_gui.QWidget):
         self.graph = parent_graph
         self.kwargs = kwargs
         self.fitTraces = dict()
+        self._fitted_name_association = dict()
         
         self.generateCtrls()
         
@@ -90,7 +95,7 @@ class Fitter_Control_Widget(_gui.QWidget):
         self.fitFct = fit.getAllFitFct()
         self.fitFctSelect.addItems(self.fitFct.keys())
         self.fitFctSelect.currentIndexChanged.connect(self.generateFitTable)
-        self.fitFctSelect.setCurrentIndex(self.fitFct.keys().index('Cos'))
+        self.fitFctSelect.setCurrentIndex(self.fitFct.keys().index('Gaussian'))
         
         #Fill in the combobox for error method
         self.errorMethodSelect.addItems(fit.Generic_Fct.allowedErrorMethods) 
@@ -230,16 +235,18 @@ class Fitter_Control_Widget(_gui.QWidget):
         self.generateOutputTable(p)
         
         #If Add the fit data if not present and update it if present
-        fit_trc_name = trc+' Fit'
-        if not fit_trc_name in self.graph:
-            self.fitTraces[fit_trc_name] = self.graph.addTrace(fit_trc_name, **self.kwargs)
+        if not trc in self._fitted_name_association:
+             trace = self.graph.addTrace(trc+' Fit', **self.kwargs)
+             self._fitted_name_association[trc] = fit_trc_name = trace.name
+             self.fitTraces[fit_trc_name] = trace
+        else:
+            fit_trc_name = self._fitted_name_association[trc]
         self.fitTraces[fit_trc_name].setData(x,y)
         
     def setTableValue(self, p):
         """
         Set all variables in the table to their associated dictionnary value
         """
-        
         for var in p.keys():
             if self.fitVarInputs.has_key(var):
                 self.fitVarInputs[var]['value'].setValue(p[var])
@@ -300,6 +307,7 @@ class Fitter_Control_Widget(_gui.QWidget):
 #------------------------------------------------------------------------------ 
 
     def exportOutputToClipboard(self, All=True):
+        app = _core.QCoreApplication.instance()
         exportStr = ''
         for i in range(self.outputTable.rowCount()):
             if All:
@@ -316,3 +324,27 @@ class Fitter_Control_Widget(_gui.QWidget):
         try: self.graph.parent().requestSelfDestroy.emit()
         except: pass
         _gui.QWidget.closeEvent(self, event)
+        
+        
+    def loadSettings(self, settingsObj = None, **kwargs):
+        print 'Loading Fitter...'
+        if type(settingsObj) != _core.QSettings:
+            print "No QSetting object was provided"
+        else:
+            self.restoreGeometry(settingsObj.value('Geometry'))
+            print "hey"
+            lastFunctionUsed = str(settingsObj.value('FunctionName'))
+            print lastFunctionUsed
+            self.fitFctSelect.setCurrentIndex(self.fitFct.keys().index(lastFunctionUsed))
+            
+                
+        return
+        
+    def saveSettings(self, settingsObj = None, **kwargs):
+        print 'Saving Fitter...'
+        if type(settingsObj) != _core.QSettings:
+            print "No QSetting object was provided"
+        else:
+            settingsObj.setValue('Geometry', self.saveGeometry())
+            settingsObj.setValue('FunctionName', str(self.fitFctSelect.currentText()))
+        return
