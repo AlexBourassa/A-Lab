@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 @author: Alex
-
-@BUG: For some reason, floating dock widget do not get restore to there original sizes...
 """
 
 from PyQt4 import QtGui as _gui

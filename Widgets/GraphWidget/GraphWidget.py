@@ -64,7 +64,7 @@ class GraphWidget(_gui.QWidget):
         
         #Add Actions
         self.menu['File']['Hide'] = self.menu['File']['_QMenu'].addAction('Hide')
-        self.menu['File']['Hide'].triggered.connect(lambda: self.hide_signal.emit())
+        self.menu['File']['Hide'].triggered.connect(lambda: self.parent().hide())
         
     def addStandardPlugins(self):
         #Add View Menu

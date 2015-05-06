@@ -15,11 +15,11 @@ class Docked_Module(_gui.QDockWidget):
         _gui.QDockWidget.__init__(self, *args, **kwargs)
         
     def hideEvent(self, event):
-        self.widget().hide()
+        #self.widget().hide()
         self.visibilityChanged.emit(self.isVisible())
         
     def showEvent(self, event):
-        self.widget().show()
+        #self.widget().show()
         self.visibilityChanged.emit(self.isVisible())
         
     def closeEvent(self, event):
