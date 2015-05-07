@@ -80,20 +80,18 @@ class Module_Container(_gui.QMainWindow):
         self.menu['File']['Close'].triggered.connect(lambda: self.close())
                 
     def removeModule(self, name):
-        try:
-            mod = self.modules.pop(name)
-            d = self._docked_widgets(name)
-            del mod
-            del d
-        except:
-            pass
+        print "Removing " + name
+        mod = self.modules.pop(name)
+        d = self._docked_widgets.pop(name)
+        del mod
+        del d
         self.moduleRemoved.emit(name)
         
     def addModule(self, module_name, module_widget, initial_pos=_core.Qt.TopDockWidgetArea):
         """
         Add a widget to the main containner
         
-        initial_pos can be either None (widget is not visible) or 
+        initial_pos can be either None (widget is floating) or 
             _core.Qt.TopDockWidgetArea
             _core.Qt.BottomDockWidgetArea
             _core.Qt.LeftDockWidgetArea
@@ -117,7 +115,7 @@ class Module_Container(_gui.QMainWindow):
         #Add the dock widget to the container
         if initial_pos == None:
             self.addDockWidget(_core.Qt.TopDockWidgetArea, d)
-            d.hide()
+            d.setFloating(True)
         else:
             self.addDockWidget(initial_pos, d)
         
@@ -128,6 +126,7 @@ class Module_Container(_gui.QMainWindow):
         
         #Load the UI
         self.loadUISettings()
+        d.show()        
         
         #Connect signal to allow for requests
         d.requestNewModule.connect(lambda name, widget, pos: self.addModule(module_name + ' ' + name, widget, initial_pos=pos))
@@ -162,8 +161,8 @@ class Module_Container(_gui.QMainWindow):
         for mod_name in self.modules:
             if hasattr(self.modules[mod_name], 'saveSettings'): 
                 settings.beginGroup(mod_name)
-                self.modules[mod_name].saveSettings(settingsObj = settings)
-                #except: pass
+                try: self.modules[mod_name].saveSettings(settingsObj = settings)
+                except: print "Failed to save settings for " + mod_name
                 settings.endGroup()
                 
                 
@@ -173,8 +172,8 @@ class Module_Container(_gui.QMainWindow):
         for plug_name in self.plugins:
             if hasattr(self.plugins[plug_name], 'saveSettings'): 
                 settings.beginGroup('Plugins')
-                self.plugins[plug_name].saveSettings(settingsObj = settings)
-                #except: pass
+                try: self.plugins[plug_name].saveSettings(settingsObj = settings)
+                except: print "Failed to save settings for " + plug_name
                 settings.endGroup()
         
         settings.endGroup()
@@ -195,8 +194,8 @@ class Module_Container(_gui.QMainWindow):
         for mod_name in self.modules:
             if hasattr(self.modules[mod_name], 'loadSettings'): 
                 settings.beginGroup(mod_name)
-                self.modules[mod_name].loadSettings(settingsObj = settings)
-                #except: pass
+                try: self.modules[mod_name].loadSettings(settingsObj = settings)
+                except: print "Failed to load settings for " + mod_name
                 settings.endGroup()
         settings.endGroup()
                 
@@ -206,8 +205,8 @@ class Module_Container(_gui.QMainWindow):
         for plug_name in self.plugins:
             if hasattr(self.plugins[plug_name], 'loadSettings'):
                 settings.beginGroup(plug_name)
-                self.plugins[plug_name].loadSettings(settingsObj = settings)
-                #except: pass
+                try: self.plugins[plug_name].loadSettings(settingsObj = settings)
+                except: print "Failed to load settings for " + plug_name
                 settings.endGroup()
         settings.endGroup()
         

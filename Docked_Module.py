@@ -8,7 +8,7 @@ from PyQt4 import QtCore as _core
 
 class Docked_Module(_gui.QDockWidget):
     visibilityChanged = _core.Signal(bool)
-    requestNewModule = _core.Signal(str, _gui.QWidget, _core.Qt.DockWidgetArea)
+    requestNewModule = _core.Signal(str, _gui.QWidget, object)
     requestSelfDestroy = _core.Signal()
     
     def __init__(self, *args, **kwargs):
@@ -23,5 +23,6 @@ class Docked_Module(_gui.QDockWidget):
         self.visibilityChanged.emit(self.isVisible())
         
     def closeEvent(self, event):
-        self.widget().close()
+        if hasattr(self.widget(),'_closeEvent'): 
+            self.widget()._closeEvent(event)
         _gui.QDockWidget.closeEvent(self, event)

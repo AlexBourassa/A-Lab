@@ -41,13 +41,13 @@ class Fitter(Graph_Widget_Plugin):
         
     def createNewFitter(self, **kwargs):
         #Control Pannel Widget
-        self.control_widget = Fitter_Control_Widget(self.graph, **kwargs)
+        control_widget = Fitter_Control_Widget(self.graph, **kwargs)
         
         # Try adding it as a docked widget, works if the parent of the graph
         # widget was given and is a Module_Container.  If it fails simply show
         # the widget... (still works but less pretty...)
-        try: self.graph.parent().requestNewModule.emit("Fitter", self.control_widget, _core.Qt.LeftDockWidgetArea) 
-        except: self.control_widget.show()
+        try: self.graph.parent().requestNewModule.emit("Fitter", control_widget, None) 
+        except: control_widget.show()
         
         
 
@@ -96,6 +96,12 @@ class Fitter_Control_Widget(_gui.QWidget):
         self.fitFctSelect.addItems(self.fitFct.keys())
         self.fitFctSelect.currentIndexChanged.connect(self.generateFitTable)
         self.fitFctSelect.setCurrentIndex(self.fitFct.keys().index('Gaussian'))
+        
+        #Begin/Stop continuous timer
+        self.timer = _core.QTimer(self)
+        self.timer.timeout.connect(self.fitData)
+        self.contFitActive = False
+        self.start_stop_btn.clicked.connect(self.toogleContFit)        
         
         #Fill in the combobox for error method
         self.errorMethodSelect.addItems(fit.Generic_Fct.allowedErrorMethods) 
@@ -317,13 +323,21 @@ class Fitter_Control_Widget(_gui.QWidget):
             exportStr += '\n'
         app.clipboard().setText(exportStr)
         
+    def toogleContFit(self):
+        if self.contFitActive:
+            self.timer.stop()
+            self.start_stop_btn.setText("Start")
+        else:
+            self.timer.start(self.contFitTime.value()*1000.)
+            self.start_stop_btn.setText("Stop")
+        self.contFitActive = not self.contFitActive
         
-    def closeEvent(self, event):
+        
+    def _closeEvent(self, event):
+        self.timer.stop()
         for trc in self.fitTraces:
             if trc in self.graph: self.graph.removeTrace(trc)
-        try: self.graph.parent().requestSelfDestroy.emit()
-        except: pass
-        _gui.QWidget.closeEvent(self, event)
+        self.parent().requestSelfDestroy.emit()
         
         
     def loadSettings(self, settingsObj = None, **kwargs):

@@ -29,7 +29,7 @@ class View_Menu(Module_Containner_Plugin):
         for m in self.container.modules:
             self.container._docked_widgets[m].setVisible(self.menu['View'][m].isChecked())
         
-    def updateViewMenu(self):        
+    def updateViewMenu(self):       
         #Add the actions
         for m in self.container.modules:
             if not m in self:
