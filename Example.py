@@ -40,6 +40,7 @@ class example(Module_Container):
         w2 = _graph.PyQtGraphWidget(parent = self)
         w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12)
         w4 = TraceManagerWidget()
+        device = Test_Device()
         
         #Add the modules to the container
         for wi in [w1,w2,w3,w4]:
@@ -49,6 +50,8 @@ class example(Module_Container):
         w1['t'] = {'x':x, 'y':y, 'pen':'y'}
         w1.addTrace('t', x=x, y=_np.sin(x), pen='r')
         w1.addTrace('t', y=x)
+        w2.addTrace('Test_Device', feeder = device)
+        
         
         #Decide which graph the trace manager deals with (here both graphs)        
         w4.addGraph('mod',w1)
@@ -81,6 +84,7 @@ if __name__ == "__main__":
     import Widgets.GraphWidget.GraphWidget as _graph
     import Widgets.IPythonConsoleWidget as _ipy
     from Widgets.TraceManagerWidget import TraceManagerWidget
+    from Widgets.Devices.Test_Device import Test_Device
     
     #Gives me some time to look at the beautifull splash screen
 #    import time as _t
