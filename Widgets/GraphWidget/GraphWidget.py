@@ -17,6 +17,7 @@ import pyqtgraph as _pg
 from GraphTrace import GraphTrace
 from Trace_View_Menu import Trace_View_Menu
 from Fitter import Fitter
+import numpy as _np
 
 class GraphWidget(_gui.QWidget):
     """
@@ -144,8 +145,21 @@ class PyQtGraphWidget(GraphWidget):
         self.buildMenu()
         
         #Do some additional init
+        self.lr = _pg.LinearRegionItem([0,10])
+        self.plot_item.addItem(self.lr)
+        self.lr.setVisible(False)
         self.legend = self.plot_item.addLegend()
         self.addStandardPlugins()
+        
+    def buildMenu(self):
+        super(PyQtGraphWidget, self).buildMenu()
+        #Add Actions            
+        self.menu['File']['Show Linear Region'] = _gui.QAction('Show Linear Region', 
+                                                          self.menu['File']['_QMenu'],
+                                                          checkable = True)
+        self.menu['File']['_QMenu'].addAction(self.menu['File']['Show Linear Region'])
+        #Connect signals
+        self.menu['File']['Show Linear Region'].triggered.connect(lambda: self.lr.setVisible(self.menu['File']['Show Linear Region'].isChecked()))    
         
         
     def addTrace(self, name, **kwargs):
@@ -176,7 +190,19 @@ class PyQtGraphWidget(GraphWidget):
         self.traceAdded.emit(name)
         return self.traces[name]
         
+    def getRegionData(self, trace_name, **kw):
+        x,y = self.traces[trace_name].getData()
+        if not self.lr.isVisible():
+            return x, y
+        region = self.lr.getRegion()
+        #Get the cropping array
+        crop = _np.logical_and(x >= region[0], x <= region[1])
         
+        if len(crop)>1:            
+            return x[crop], y[crop]
+        else:
+            #If none of the curve is in the region.  Append an empty array
+            return _np.ndarray([0]), _np.ndarray([0])
         
     def removeTrace(self, name):
         """

@@ -15,8 +15,9 @@ class Trace_View_Menu(Graph_Widget_Plugin):
         self.graph = parent_graph
         
         #Build view menu
-        self.menu['View'] = dict()
-        self.menu['View']['_QMenu'] = self.menu['_QMenuBar'].addMenu('View')
+        if not 'View' in self.menu:
+            self.menu['View'] = dict()
+            self.menu['View']['_QMenu'] = self.menu['_QMenuBar'].addMenu('View')
         
         #Update if modules are added or removed
         self.graph.traceAdded.connect(lambda x: self.updateViewMenu())

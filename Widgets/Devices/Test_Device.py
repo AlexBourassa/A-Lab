@@ -36,4 +36,8 @@ class Test_Device(_gui.QWidget):
         self.setData(x,y+self.addedData )
         
     def setData(self, x, y):
+        """
+        This is a dummy function that will get overwritten when the object is
+        associated with a GraphTrace as a feeder.
+        """
         self.newData.emit(x,y)
