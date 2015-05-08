@@ -12,7 +12,6 @@ class Trace_View_Menu(Graph_Widget_Plugin):
     def __init__(self, parent_graph):
         Graph_Widget_Plugin.__init__(self, parent_graph)
         self.menu = self.graph.menu
-        self.graph = parent_graph
         
         #Build view menu
         if not 'View' in self.menu:

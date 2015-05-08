@@ -16,6 +16,7 @@ from PyQt4 import QtCore as _core
 import pyqtgraph as _pg
 from GraphTrace import GraphTrace
 from Trace_View_Menu import Trace_View_Menu
+from Transform_Menu import Transform_Menu
 from Fitter import Fitter
 import numpy as _np
 
@@ -71,6 +72,9 @@ class GraphWidget(_gui.QWidget):
         #Add View Menu
         self.plugins['View'] = Trace_View_Menu(self)
         
+        #Add the transform menu
+        self.plugins['Transform_Menu'] = Transform_Menu(self)
+        
         #Add a fitter
         self.plugins['Fitter'] = Fitter(self, pen='g')
         
@@ -79,7 +83,9 @@ class GraphWidget(_gui.QWidget):
         This takes in a GraphTrace object and uses it to create a new trace
         """
         x,y= trace.getData()
-        return self.addTrace(trace.name, x=x, y=y, **trace.kwargs)
+        trc = self.addTrace(trace.name, x=x, y=y, **trace.kwargs)
+        trc.transform = trace.transform
+        return trc
         
     def getRegionData(self, trace_name, verbose=True, **kw):
         x,y = self.traces[trace_name].getData()
