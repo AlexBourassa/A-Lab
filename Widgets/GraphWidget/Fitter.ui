@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>373</width>
-    <height>607</height>
+    <width>347</width>
+    <height>484</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,69 +30,63 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>353</width>
-        <height>587</height>
+        <width>327</width>
+        <height>464</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>Fit Function:</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1" colspan="2">
-          <widget class="QComboBox" name="fitFctSelect"/>
-         </item>
-         <item row="2" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>Error Method:</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1" colspan="2">
-          <widget class="QComboBox" name="errorMethodSelect"/>
-         </item>
-         <item row="4" column="1">
+         <item row="5" column="1">
           <widget class="QPushButton" name="fitBtn">
            <property name="text">
             <string>Fit</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
+         <item row="5" column="0">
           <widget class="QPushButton" name="guessBtn">
            <property name="text">
             <string>Guess</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="label_3">
            <property name="text">
             <string>Continuous Fit:</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="4" column="1">
           <widget class="QPushButton" name="start_stop_btn">
            <property name="text">
             <string>Start</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
+         <item row="1" column="0">
           <widget class="QLabel" name="label">
            <property name="text">
             <string>Signal Select</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="2">
+         <item row="4" column="2">
           <widget class="QDoubleSpinBox" name="contFitTime">
            <property name="suffix">
             <string> sec</string>
@@ -108,11 +102,24 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="1" column="1">
           <widget class="QComboBox" name="signalSelect"/>
          </item>
-         <item row="0" column="2">
-          <spacer name="horizontalSpacer_2">
+         <item row="1" column="2">
+          <widget class="QCheckBox" name="transformed_Check">
+           <property name="text">
+            <string>Transfomed?</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1" colspan="2">
+          <widget class="QComboBox" name="errorMethodSelect"/>
+         </item>
+         <item row="2" column="1" colspan="2">
+          <widget class="QComboBox" name="fitFctSelect"/>
+         </item>
+         <item row="5" column="3">
+          <spacer name="horizontalSpacer_3">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -124,8 +131,47 @@
            </property>
           </spacer>
          </item>
-         <item row="4" column="2">
-          <spacer name="horizontalSpacer_3">
+         <item row="4" column="3">
+          <spacer name="horizontalSpacer_6">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="3" column="3">
+          <spacer name="horizontalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="2" column="3">
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="3">
+          <spacer name="horizontalSpacer_2">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>

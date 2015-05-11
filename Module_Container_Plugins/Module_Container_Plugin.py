@@ -1,5 +1,5 @@
 """
-@author: Alex
+@author: AlexBourassa
 """
 
 from PyQt4 import QtCore as _core

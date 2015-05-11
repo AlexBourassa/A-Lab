@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-@author: Alex
+@author: AlexBourassa
 
 @TODO: Add a plugin that can import data from file and save them
+
+@TODO: Add remote plotting to plot from a different process
 """
 #import os as _os
 #_os.environ['QT_API'] = 'pyside'# 'pyqt' for PyQt4 / 'pyside' for PySide
@@ -84,11 +86,11 @@ class GraphWidget(_gui.QWidget):
         """
         x,y= trace.getData()
         trc = self.addTrace(trace.name, x=x, y=y, **trace.kwargs)
-        trc.transform = trace.transform
+        trc.setTransform(trace.transform, transform_name = trace.transform_name)
         return trc
         
     def getRegionData(self, trace_name, verbose=True, **kw):
-        x,y = self.traces[trace_name].getData()
+        x,y = self.traces[trace_name].getData(**kw)
         if verbose:
             print "No getRegionData() function defined for this GraphWidget.  Returning all data..."
         return x,y
@@ -189,15 +191,15 @@ class PyQtGraphWidget(GraphWidget):
         name += suffix
         self.pyqt_traces[name] = self.plot_item.plot(name=name)
         self.traces[name] = GraphTrace(name, **kwargs)
-        self.traces[name].newData.connect(self._setTraceData)
-        self.traces[name].newData.emit(name)#SetData once in case data was passed through kwargs
+        self.traces[name].signal_newData.connect(self._setTraceData)
+        self.traces[name].signal_newData.emit(name)#SetData once in case data was passed through kwargs
         self.pyqt_traces[name].visible = True
         
         self.traceAdded.emit(name)
         return self.traces[name]
         
     def getRegionData(self, trace_name, **kw):
-        x,y = self.traces[trace_name].getData()
+        x,y = self.traces[trace_name].getData(**kw)
         if not self.lr.isVisible():
             return x, y
         region = self.lr.getRegion()
@@ -242,7 +244,7 @@ class PyQtGraphWidget(GraphWidget):
     def _setTraceData(self, name):
         """
         Sets new data on the pyqtGraph widget.  This should not be call 
-        externally, but will be called every time a newData signal is emitted
+        externally, but will be called every time a signal_newData signal is emitted
         by the GraphTrace Object.
         """
         x, y = self.traces[name].getData(transformed=True)

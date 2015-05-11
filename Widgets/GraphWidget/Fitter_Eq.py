@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Alexandre Bourassa
+@author: AlexBourassaandre Bourassa
 
 @TODO:  Auto Generate the fitFct dict
 """

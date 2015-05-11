@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Alex
+@author: AlexBourassa
         
 @TODO:  Copy and delete feature (perhaps using keyboard Ctrl-C/Ctrl-V and Delete)        
         

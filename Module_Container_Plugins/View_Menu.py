@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Alex
+@author: AlexBourassa
 
 @TODO: Doesn't delete entry when moduleRemoved triggers
 """

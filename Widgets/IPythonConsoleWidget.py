@@ -2,7 +2,7 @@
 """
 Created on Fri Apr 24 16:36:29 2015
 
-@author: Alex
+@author: AlexBourassa
 
 This file allows for easy creation of iPython Qt Console Widget
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Alex
+@author: AlexBourassa
 """
 
 from PyQt4 import QtGui as _gui
@@ -10,7 +10,7 @@ import time as _t
 
 class Test_Device(_gui.QWidget):
     
-    newData = _core.Signal(_np.ndarray, _np.ndarray)
+    signal_newData = _core.Signal(_np.ndarray, _np.ndarray)
     
     def __init__(self, dataSize = 100, amplitude = 0.2, center = 0, addedGaussian=True, **kw):
         _gui.QWidget.__init__(self)
@@ -40,4 +40,4 @@ class Test_Device(_gui.QWidget):
         This is a dummy function that will get overwritten when the object is
         associated with a GraphTrace as a feeder.
         """
-        self.newData.emit(x,y)
+        self.signal_newData.emit(x,y)

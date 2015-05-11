@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Alex
+@author: AlexBourassa
 
 This is based on old code. It works, but may not be optimal or simple...
 """
@@ -79,13 +79,13 @@ class Fitter_Control_Widget(_gui.QWidget):
         self.graph.traceRemoved[str].connect(lambda x: self.signalSelect.removeItemByName(x))
         
 
-
     def generateCtrls(self):
         
         #Fill in the signal select input
         items = list(self.graph)
         self.signalSelect.addItems(items)
         self.signalSelect.setCurrentIndex(len(items)-1)
+        
         
         #Link fit buttons
         self.fitBtn.clicked.connect(self.fitData)
@@ -226,14 +226,14 @@ class Fitter_Control_Widget(_gui.QWidget):
         trc =str(self.signalSelect.currentText())
         
         #Fit the data
-        xData, yData = self.graph.getRegionData(trc)
+        xData, yData = self.graph.getRegionData(trc, transformed = self.transformed_Check.isChecked())
         if len(fctVars) != 0:
             fitData, p = self.fitFct[fctName].performFit(fctVars, _np.array([xData, yData]), const=fctConst, errorMethod=errorMethod)
         else:
             p = fctConst
         
         #Gets the full fit data
-        x = self.graph[trc].getData()[0]
+        x = self.graph[trc].getData(transformed = self.transformed_Check.isChecked())[0]
         y = self.fitFct[fctName].evaluateFct(p, x)
         
         #Fill the tables
@@ -248,6 +248,13 @@ class Fitter_Control_Widget(_gui.QWidget):
         else:
             fit_trc_name = self._fitted_name_association[trc]
         self.fitTraces[fit_trc_name].setData(x,y)
+        
+        #Change transform if necessary
+        if self.transformed_Check.isChecked():
+            def f(x,y): return x,y
+            self.fitTraces[fit_trc_name].setTransform(f, transform_name = 'NoTransform')
+        else:
+            self.fitTraces[fit_trc_name].setTransform(self.graph[trc].transform, self.graph[trc].transform_name)
         
     def setTableValue(self, p):
         """
@@ -296,10 +303,10 @@ class Fitter_Control_Widget(_gui.QWidget):
         fctName = str(self.fitFctSelect.currentText())
         
         #Data
-        data = self.graph.getRegionData(self.signalSelect.currentText())
+        xData, yData = self.graph.getRegionData(self.signalSelect.currentText(), transformed = self.transformed_Check.isChecked())
         
         #Guess the parametters
-        p = self.fitFct[fctName].guessP(data[0], data[1])
+        p = self.fitFct[fctName].guessP(xData, yData)
         
         if p != None:
             #Set the parametters

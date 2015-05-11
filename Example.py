@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Alex
+@author: AlexBourassa
 
 @BUG: I have to load Widgets.IPythonConsoleWidget first or else PyQt defaults
       to V1. (ie ?import IPython.qt.console.rich_ipython_widget? does something to
@@ -40,10 +40,11 @@ class example(Module_Container):
         w2 = _graph.PyQtGraphWidget(parent = self)
         w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12)
         w4 = TraceManagerWidget()
+        w5 = egg_TreeDictionary(show_header=True)
         device = Test_Device()
         
         #Add the modules to the container
-        for wi in [w1,w2,w3,w4]:
+        for wi in [w1,w2,w3,w4,w5]:
             self.addModule('mod', wi, initial_pos = _core.Qt.TopDockWidgetArea)
         
         #Add some data
@@ -51,6 +52,19 @@ class example(Module_Container):
         w1.addTrace('t', x=x, y=_np.sin(x), pen='r')
         w1.addTrace('t', y=x)
         w2.addTrace('Test_Device', feeder = device)
+        
+        #Add some tree parametters
+        w5.add_parameter('LOL_WUT', 32.5, type='float')
+        w5.add_parameter('Some Category/Some Other Categ./parameter', '32')
+        w5.add_parameter('Some Category/parameter2', values=dict(a=32,b=45,c=17), value=45, type='list')
+        w5.add_parameter('LOL_WUT/test', 'lsdkjf')
+        
+        w5.add_parameter('Numbers/limits(min=-7_max=0)', -3, type='int', limits=(-7,0), step=0.1)
+        w5.add_parameter('Numbers/Units Too!', 1e-6, type='float', siPrefix=True, suffix='V', step=1e-4)
+        
+        btn=w5.add_button('Some Category/test button')
+        def f(): print "hey"
+        btn.signal_clicked.connect(f)
         
         
         #Decide which graph the trace manager deals with (here both graphs)        
@@ -64,13 +78,15 @@ class example(Module_Container):
 
 
 
-if __name__ == "__main__":
 
+# This part is a bit more involved (compared to the creation of the rest of the
+# UI), so if you  
+if __name__ == "__main__": 
     
     #uiThread = _core.QThread()
     app = _gui.QApplication([])
     
-    # Create and display the splash screen (this is an image I found on google)
+    # Create and display the splash screen
     splash_pix = _gui.QPixmap('SplashScreen.png')
     splash = _gui.QSplashScreen(splash_pix, _core.Qt.WindowStaysOnTopHint)
     splash.setMask(splash_pix.mask())
@@ -85,14 +101,23 @@ if __name__ == "__main__":
     import Widgets.IPythonConsoleWidget as _ipy
     from Widgets.TraceManagerWidget import TraceManagerWidget
     from Widgets.Devices.Test_Device import Test_Device
+    from Widgets.egg_TreeDictionary import egg_TreeDictionary    
     
-    #Gives me some time to look at the beautifull splash screen
+    #Gives me some time to look at the beautiful splash screen
 #    import time as _t
 #    _t.sleep(3)    
     
+    #Do some application specific work (for this example, create some variables)
     x = _np.linspace(0,4*_np.pi)
     y = _np.cos(x)
+    
+    #Create the object
     win = example(autoSave=False, standardPlugins=True)
+    
+    # Here you can add shortcuts for the command line (for example, let's say
+    # we use the Test_Device trace from module mod2 a lot)
+    trace = win['mod2']['Test_Device']
+    
 
     
     # Runs a new IPython kernel, that begins the qt event loop.
@@ -100,7 +125,8 @@ if __name__ == "__main__":
     # Other options for the ipython kernel can be found at:
     # https://ipython.org/ipython-doc/dev/config/options/kernel.html
     #
-    # To connect to the kernel use the info in C:\Users\Alex\.ipython\profile_default\security\kernel-example.json
+    # To connect to the kernel use the info in <...>\.ipython\profile_default\security\kernel-example.json
+    # where <...> under windows is probably C:\Users\<username>
     (current_module, current_ns) = extract_module_locals(depth=0)
     IPython.start_kernel(user_ns = current_ns, 
                          exec_lines=[u'splash.finish(win)'],#u'win = example()', u'splash.finish(win)'], 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Alex
+@author: AlexBourassa
 """
 
 import numpy as _np
@@ -10,13 +10,16 @@ class GraphTrace(_core.QObject):
     """
     This class represents a Trace and the possible attributes it can contain
     """
-    newData = _core.Signal(str)    
+    signal_newData = _core.Signal(str) #str: name of the trace
+    signal_transformChanged = _core.Signal(str, str) #str: name of the trace
+                                                     #str: name of the transform
     
     def __init__(self, name, *args, **kwargs):
         _core.QObject.__init__(self)
         if 'name' in kwargs:
             kwargs.pop('name')
         self.name = name
+        self.transform_name = 'NoTransform'
         self.args = args
         self.kwargs = kwargs
         self.xData = None
@@ -27,14 +30,14 @@ class GraphTrace(_core.QObject):
                 self.xData = _np.array(kwargs.pop('x'))
             else:
                 self.xData = _np.linspace(0, len(self.yData)-1, num=len(self.yData))
-            self.newData.emit(self.name)
+            self.signal_newData.emit(self.name)
             
         if 'feeder' in kwargs: self.setNewFeeder(kwargs['feeder'])
         
     def setData(self, x, y):
         self.xData = _np.array(x)
         self.yData = _np.array(y)
-        self.newData.emit(self.name)
+        self.signal_newData.emit(self.name)
         
     def setNewFeeder(self, feeder):
         #Reset the set data of the feeder
@@ -49,13 +52,38 @@ class GraphTrace(_core.QObject):
         
         
     def getData(self, transformed=True):
+        """
+        Returns the current trace data, 
+        """
         if transformed and not (self.xData==None or self.yData==None):
             x,y = self.transform(self.xData, self.yData)
         else:
             x,y = self.xData, self.yData
         return x, y
         
+    def setTransform(self, f, transform_name='Custom'):
+        """
+        Sets a new transform to the trace.
+        
+        Function <f> must be of the form:
+            def f(x,y):
+                ...
+                return new_x, new_y
+        
+        TODO: Make explicit cheks that the function is valid (for now I'll
+        assume everyone is being responsible...)
+        """
+        self.transform_name = transform_name
+        self.transform = f
+        self.signal_transformChanged.emit(self.name, transform_name)
+        self.signal_newData.emit(self.name)
+        
+    
     def transform(self, x, y):
+        """
+        This is a function coresponding to an applied transformed on the data.
+        It is meant to be overwritten by setTransform
+        """
         return x,y
         
 
