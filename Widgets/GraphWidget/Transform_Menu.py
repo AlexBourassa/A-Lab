@@ -42,7 +42,7 @@ class Transform_Menu(Graph_Widget_Plugin):
         self.updateTransformMenu()
         
     def updateTransformMenu(self):
-        print "Update Transform menu"#Debug
+
         #For Each traces add a submenu
         for trc in self.graph:
             if not trc in self:

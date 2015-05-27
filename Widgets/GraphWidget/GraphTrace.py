@@ -86,6 +86,19 @@ class GraphTrace(_core.QObject):
         """
         return x,y
         
+    def save(self, file_handler, transformedData = True):
+        """
+        Save the trace info in the current group.
+        
+        This will create new entries: 
+            x & y in data
+            kwargs in headers
+        """
+        x,y= self.getData(transformed=transformedData)
+        file_handler.addData(x=x, y=y)
+        kwargs=dict(self.kwargs)
+        if 'feeder' in kwargs: kwargs.pop('feeder') #Cannot keep the feeder instance
+        file_handler.addHeaders(kwargs=kwargs)
 
 # This is a very simple class that allows for the feeder source to be independant
 # from the Trace object.  Another way to do this is to simply use the 

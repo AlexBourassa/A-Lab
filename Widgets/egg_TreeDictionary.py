@@ -345,6 +345,7 @@ class egg_TreeDictionary(_pg.parametertree.ParameterTree):
         """
         print("signal change!")
         #if self.autosave: self.save()
+        
 
 #    def save(self, path=None):
 #        """

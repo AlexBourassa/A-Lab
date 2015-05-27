@@ -5,14 +5,14 @@
 @TODO: Doesn't delete entry when moduleRemoved triggers
 """
 
-from Module_Container_Plugin import *
+from Module_Container_Plugin import Module_Container_Plugin
 from PyQt4 import QtGui as _gui
 
 
-class View_Menu(Module_Containner_Plugin):
+class View_Menu(Module_Container_Plugin):
     
     def __init__(self, parent_container):
-        Module_Containner_Plugin.__init__(self, parent_container)
+        Module_Container_Plugin.__init__(self, parent_container)
         self.menu = self.container.menu
         
         #Build view menu

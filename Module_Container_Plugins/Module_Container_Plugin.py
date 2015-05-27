@@ -4,7 +4,7 @@
 
 from PyQt4 import QtCore as _core
 
-class Module_Containner_Plugin(_core.QObject):
+class Module_Container_Plugin(_core.QObject):
     
     def __init__(self, parent_container):
         _core.QObject.__init__(self)

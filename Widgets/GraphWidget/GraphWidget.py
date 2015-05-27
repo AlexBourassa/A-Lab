@@ -26,8 +26,6 @@ class GraphWidget(_gui.QWidget):
     """
     This implements the generic structure of a graph widget and gives access to
     different attributes (menus, ect...)
-    
-    TO DO
     """
     
     #Explicit Signal List
@@ -112,6 +110,48 @@ class GraphWidget(_gui.QWidget):
                 settingsObj.beginGroup(plug_name)
                 self.plugins[plug_name].loadSettings(settingsObj)
                 settingsObj.endGroup()    
+                
+    def save(self, file_handler = None, transformedData = True):
+        if file_handler == None: return None
+        file_handler.beginGroup('::TraceData')        
+        for trace_name in self.traces:
+            file_handler.beginGroup(trace_name)
+            self.traces[trace_name].save(file_handler, transformedData=transformedData)
+            file_handler.endGroup()
+        file_handler.endGroup()
+        
+    def load(self, file_handler = None):
+        if file_handler == None: return None
+
+        #Create function aliases for shortcuts
+        headers, data = file_handler.getHeaders, file_handler.getData            
+            
+        #Begin by loading the structures
+        file_handler.beginGroup('::TraceData')
+        data_g, data_v = data().listGroupsAndValues()
+        headers_g, headers_v = headers().listGroupsAndValues()
+        
+        #Trace by trace, load the data
+        for trace_name in data_g:
+            file_handler.beginGroup(trace_name)
+            
+            #Check if the strucutre has trace metadata for this trace
+            if trace_name in headers_g: hasMetadata = True
+            else: hasMetadata = False
+            
+            #Get the data if it exist
+            g, v = data().listGroupsAndValues()
+            if 'x' in v and 'y' in v:
+                x = data()['x']
+                y = data()['y']
+                trc_kw = {}
+                if hasMetadata:
+                    trc_kw = headers()['kwargs']
+                #create a new trace
+                self.addTrace(trace_name, x=x, y=y, **trc_kw)
+
+            file_handler.endGroup()
+        file_handler.endGroup()
         
     def __iter__(self):
         return iter(self.traces)

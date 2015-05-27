@@ -1,78 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-@author: AlexBourassa
+Created on Sat May 23 11:35:52 2015
 
-This module handles save/load
+@author: Alex
 """
+
+import numpy as _np
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
-import numpy as _np
 
-class Load_Save_Widget(_gui.QWidget):
-    def __init__(self, parent=None, **kwargs):
-        _gui.QWidget.__init__(self, parent=parent)
-
-
-class File_Handler():
-    def __init__(self, filename):
-        self.filename = filename
-        self.data = dict()
-        self.headers = Hiar_Storage()
-        
-    def load(self):
-        raise NotImplemented
-        
-        
-    def addData(self, groupName='default', **kwData):
-        """
-        Adds data to <groupName> group.  Data entry will be given the name by
-        which they are specified in the kwData dictionary.
-        
-        To add data, simply use:
-            file_handler.addData('myGroup', x=myXdata, y1=myYdata1, other_y=myYdata2)
-                where myXdata, myYdata1, myYdata2 are the arrays you want to store
-        
-        All File_Handler sub_class must have support for at least 1D array and 
-        2D arrays.  For other data type please check individual file handler, 
-        to see what's supported.
-        """
-        if not groupName in self.data: self.data[groupName] = dict()
-        for k in kwData:
-            self.data[groupName][k] = _np.array(kwData[k])
-        
-    def getHeaders(self):
-        """
-        Returns the Hiar_Storage structure containing the headers.
-        
-        This can be use to either access curently stored headers, or modify
-        them.
-        
-        For more info, on how the structure can be used, refer to the Hiar_Storage
-        class.
-        """
-        return self.headers
-        
-    def save(self):
-        raise NotImplemented
-        
-    def __str__(self):
-        tab = ' '*3
-        s = 'File_Handler for ' + self.filename
-        s += '\nData:'
-        for group in self.data:
-            s += '\n=> ' +  group
-            for data_entry in self.data[group]:
-                s += '\n' + 2*tab + data_entry + ': shape = ' + str(self.data[group][data_entry].shape)
-        s += '\nHeaders:'
-        s += '\n=>TODO...'
-        return s
-        
-        
-class Pickle_Handler(File_Handler):
-    def __init__(self, filename):
-        super(Pickle_Handler, self).__init__(self, filename)
-        
-    
 class Hiar_Storage():
     """
     This is a hiarchical storage for headers.  It is a very convient class to
@@ -81,20 +17,98 @@ class Hiar_Storage():
     only once...)
     """    
     
+    # Signals when element is added or removed (parameters are the absolute
+    # path of the item and the item itself)
+    signal_value_added = _core.Signal(str, object)
+    signal_value_removed = _core.Signal(str, object)#Not currently used...
+    
+    
     def __init__(self):
         self.content = Hiar_Group()
         self.prefix = '/'#Using UNIX convention, absolute path start with /
         
+    def findAll(self, key):
+        """
+        Find all instances of <key> in the tree.  Return a dict of the absolute
+        path with their item values (either a group or a value)
+        """
+        flatten_dict = self.flatten()
+        path_array = _np.array(flatten_dict.keys())
+        possible_index = _np.array(map(lambda path: key in path, path_array))
+        ans = dict()
+        for possible_path in path_array[possible_index]:
+            #If it is the full name of a group it is between 2 '/'
+            if '/' + key + '/' in possible_path:
+                group_path = possible_path.split('/'+key+'/')[0] + '/' + key
+                ans[group_path] = self[group_path]
+            #If it is the full name of a value it terminates the path
+            elif possible_path.endswith('/' + key): 
+                ans[possible_path] = flatten_dict[possible_path]
+        return ans
+        
+    def flatten(self):
+        """
+        Returns a single 1D dictionary of the full path associated with their
+        item.
+        """
+        #Define a sub function to allow recursive calls
+        def _flatten(storage_struct, flatten_dict, prefix):
+            for key in storage_struct:
+                #Add the value if it is a leaf node
+                if not self.isItemGroup(storage_struct[key]): flatten_dict[prefix+key] = storage_struct[key]
+                #Recursivelly scan the sub_groups otherwise
+                else: 
+                    flatten_dict = _flatten(storage_struct[key], flatten_dict, prefix + key + '/')
+            return flatten_dict
+            
+        #Call the recursive function
+        return _flatten(self, dict(), '/')
+    
+    def merge(self, old, new):
+        """
+        This merges another hiar_storage's with the current structure.
+        
+        If there a key conflict the new supplied storage will have priority.
+        (ie it will overwrite the self entries with it's own values)
+        """
+        for value in new:
+            #Substitute the values
+            if not self.isItemGroup(new[value]): old[value] = new[value]
+            #Recursivelly scan the sub_groups
+            else: 
+                if value in old: old[value] = self.merge(old[value], new[value])
+                else: old[value] = new[value]
+        return old
+        
     def beginGroup(self, groupName):
         """
-        Enter a new group.
+        Enter a new group.  Make sure to always pair a beginGroup with an endGroup.
         """
         self.prefix += groupName + '/'
         
+    def resetToRoot(self):
+        """
+        This method reset the path or group to root ('/').
+        
+        This is equivalent to closing all groups that have been openned
+        """
+        self.prefix = '/'#Using UNIX convention, absolute path start with /
+        
+    def add(self, **kwargs):
+        """
+        Simple way to add data to the structure.
+        
+        To use this function, you can simply do:
+            Hiar_Storage.add(name1 = value1, name2 = value2)
+            
+        Values will be stored in the current group.
+        """
+        for k in kwargs:
+            self[k] = kwargs[k]
         
     def endGroup(self):
         """
-        Exit one group level.
+        Exit one group level.  Make sure to always pair a beginGroup with an endGroup.
         """
         hiar_list = self.getHiarList(self.prefix)
         if len(hiar_list)==0: return
@@ -142,6 +156,7 @@ class Hiar_Storage():
         
         Raises an Exception if the specified node is a value node
         """
+        if item == None: item = self[self.prefix]
         current_node = item
         if not self.isItemGroup(current_node): raise Exception("Cannot search a value node for subgroups")
         ans_groups = list()
@@ -180,6 +195,9 @@ class Hiar_Storage():
         """
         Set a new item.  If the item already exist it will be overwritten
         """
+        # TODO: Optimize for relative path using (eg by using a self.current_item
+        # variable.
+        
         #Get the groups
         hiar_list = self.getHiarList(key)
         last_key = hiar_list.pop(-1)#Special treatement for last key
@@ -192,6 +210,10 @@ class Hiar_Storage():
             
         #Set the final value
         current_node[last_key] = value
+        
+        #Triggered the add signal
+        self.signal_value_added.emit(self.getPath(key), value)
+        
         
     def __str__(self, item=None, prefix_to_line=''):
         """
@@ -219,30 +241,3 @@ class Hiar_Storage():
 # This allows for differentiation between dictionaries and groups in Hiar_Storage   
 class Hiar_Group(dict):
     pass
-        
-        
-if __name__=='__main__':
-    #For debuggin purposes only
-    a = File_Handler('')
-    x = _np.linspace(0,100)
-    y = _np.cos(x)
-    a.addData(x=x, y=y)
-    h = a.getHeaders()
-    
-    h.beginGroup('g1')
-    h['v1'] = 'hey'
-    h['v2'] = 1
-    h.beginGroup('g1.1')
-    h['v1.1'] = ['a','b','c']
-    h.endGroup()
-    h.endGroup()
-    h['v0']= 132
-    h.beginGroup('g2')
-    h['asfdg'] = 'asfdg'
-    h.endGroup()
-    h['/g3/g3.1/gAlex/vHey'] = 'hey'
-    
-        
-    
-            
-        
