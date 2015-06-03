@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat May 23 11:35:52 2015
+@author: AlexBourassa
 
-@author: Alex
 """
 
 import numpy as _np
-from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
-class Hiar_Storage():
+class Hiar_Storage(_core.QObject):
     """
     This is a hiarchical storage for headers.  It is a very convient class to
     load and save data, but it is not optimized for performance... Might be
@@ -18,12 +16,13 @@ class Hiar_Storage():
     """    
     
     # Signals when element is added or removed (parameters are the absolute
-    # path of the item and the item itself)
+    # path of the item and the value itself)
     signal_value_added = _core.Signal(str, object)
     signal_value_removed = _core.Signal(str, object)#Not currently used...
     
     
     def __init__(self):
+        _core.QObject.__init__(self)
         self.content = Hiar_Group()
         self.prefix = '/'#Using UNIX convention, absolute path start with /
         

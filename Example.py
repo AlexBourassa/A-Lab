@@ -42,6 +42,26 @@ class example(Module_Container):
     def __init__(self, **kw):
         #Initialize the windows
         super(example, self).__init__(**kw)
+        
+        #For debuggin purposes only
+        a = File_Handler('')
+        x = _np.linspace(0,100)
+        y = _np.cos(x)
+        a.addData(x=x, y=y)
+        h = a.getHeaders()
+        a.beginGroup('g1')
+        a.addHeaders(v1='hey', v2=1)
+        a.beginGroup('g1.1')
+        a.addHeaders(g1_1= ['a','b','c'])
+        #TODO: ADD DICT
+        #a.addHeaders(g_dict={'one':1, 'two':2, 'three':3})
+        a.endGroup()
+        a.endGroup()
+        h['v0']= 132
+        a.beginGroup('g2')
+        h['asfdg'] = 'asfdg'
+        a.endGroup()
+        h['/g3/g3.1/gAlex/vHey'] = 'hey'
 
         #Create some widgets and objects
         w1 = _graph.PyQtGraphWidget(parent = self)
@@ -49,7 +69,7 @@ class example(Module_Container):
         w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12)
         w4 = TraceManagerWidget()
         w5 = egg_TreeDictionary(show_header=True)
-        w6 = Hiar_Param_Tree()
+        w6 = Hiar_Param_Tree(hiar_storage = h)
         
         #Add the modules to the container
         for wi in [w1,w2,w3,w4,w5,w6]:
@@ -123,6 +143,7 @@ if __name__ == "__main__":
     from Widgets.Devices.Test_Device import Test_Device
     from Widgets.egg_TreeDictionary import egg_TreeDictionary
     from Widgets.Hiar_Param_Tree import Hiar_Param_Tree
+    from Generic_UI.Others.File_Handler import File_Handler
     
     #Gives me some time to look at the beautiful splash screen
 #    import time as _t
