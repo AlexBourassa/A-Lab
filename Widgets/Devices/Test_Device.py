@@ -33,11 +33,18 @@ class Test_Device(_gui.QWidget):
         #print t - self.last_time
         x = self.x
         y = (_np.random.rand(100)-0.5)*2*self.amplitude + self.center
-        self.setData(x,y+self.addedData )
+        self._setData(x,y+self.addedData )
+        
+    def _setData(self, x, y):
+        self.signal_newData.emit(x,y)
+        self.setData(x,y)
+        
         
     def setData(self, x, y):
         """
         This is a dummy function that will get overwritten when the object is
         associated with a GraphTrace as a feeder.
         """
-        self.signal_newData.emit(x,y)
+        return
+        
+        

@@ -87,6 +87,12 @@ class example(Module_Container):
         w1.addTrace('t', y=x)
         w2.addTrace('Test_Device', feeder = device)
         
+        #Phone sensors
+        phone = SensorTCP()
+        phone.signal_newFeeder.connect(lambda name, feeder: w2.addTrace(name, feeder = feeder))
+        self.phone = phone
+        
+        
         #Add some tree parametters (taken from spinmob's example)
         w5.add_parameter('LOL_WUT', 32.5, type='float')
         w5.add_parameter('Some Category/Some Other Categ./parameter', '32')
@@ -144,6 +150,8 @@ if __name__ == "__main__":
     from Widgets.egg_TreeDictionary import egg_TreeDictionary
     from Widgets.Hiar_Param_Tree import Hiar_Param_Tree
     from Generic_UI.Others.File_Handler import File_Handler
+    from Generic_UI.Extras.PhoneSensors.SensorTCP import SensorTCP
+    
     
     #Gives me some time to look at the beautiful splash screen
 #    import time as _t
