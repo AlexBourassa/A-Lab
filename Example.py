@@ -70,9 +70,10 @@ class example(Module_Container):
         w4 = TraceManagerWidget()
         w5 = egg_TreeDictionary(show_header=True)
         w6 = Hiar_Param_Tree(hiar_storage = h)
+        dp, w7 = egg_DataboxPlot()
         
         #Add the modules to the container
-        for wi in [w1,w2,w3,w4,w5,w6]:
+        for wi in [w1,w2,w3,w4,w5,w6,w7]:
             self.addModule('mod', wi, initial_pos = _core.Qt.TopDockWidgetArea)
         
         #Decide which graph the trace manager deals with (here both graphs)        
@@ -88,9 +89,9 @@ class example(Module_Container):
         w2.addTrace('Test_Device', feeder = device)
         
         #Phone sensors
-        phone = SensorTCP()
-        phone.signal_newFeeder.connect(lambda name, feeder: w2.addTrace(name, feeder = feeder))
-        self.phone = phone
+#        phone = SensorTCP()
+#        phone.signal_newFeeder.connect(lambda name, feeder: w2.addTrace(name, feeder = feeder))
+#        self.phone = phone
         
         
         #Add some tree parametters (taken from spinmob's example)
@@ -148,6 +149,7 @@ if __name__ == "__main__":
     from Widgets.TraceManagerWidget import TraceManagerWidget
     from Widgets.Devices.Test_Device import Test_Device
     from Widgets.egg_TreeDictionary import egg_TreeDictionary
+    from Widgets.egg_DataboxPlot import egg_DataboxPlot
     from Widgets.Hiar_Param_Tree import Hiar_Param_Tree
     from Generic_UI.Others.File_Handler import File_Handler
     from Generic_UI.Extras.PhoneSensors.SensorTCP import SensorTCP
