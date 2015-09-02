@@ -17,8 +17,8 @@ class Hiar_Storage(_core.QObject):
     
     # Signals when element is added or removed (parameters are the absolute
     # path of the item and the value itself)
-    signal_value_added = _core.Signal(str, object)
-    signal_value_removed = _core.Signal(str, object)#Not currently used...
+#    signal_value_added = _core.Signal(str, object)
+#    signal_value_removed = _core.Signal(str, object)#Not currently used...
     
     
     def __init__(self):
@@ -164,7 +164,6 @@ class Hiar_Storage(_core.QObject):
             if self.isItemGroup(current_node[item]): ans_groups.append(item)
             else: ans_values.append(item)
         return ans_groups, ans_values
-    
         
     def __contains__(self, key):
         """
@@ -211,7 +210,7 @@ class Hiar_Storage(_core.QObject):
         current_node[last_key] = value
         
         #Triggered the add signal
-        self.signal_value_added.emit(self.getPath(key), value)
+#        self.signal_value_added.emit(self.getPath(key), value)
         
         
     def __str__(self, item=None, prefix_to_line=''):

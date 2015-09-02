@@ -27,7 +27,7 @@ from Docked_Module import Docked_Module
 
 import os as _os
 
-default_params = {'autoSave':True, 'standardPlugins':True}
+default_params = {'autoSave':True, 'standardPlugins':True, 'kernel_pid':None}
 
 class Module_Container(_gui.QMainWindow):
     
@@ -163,9 +163,15 @@ class Module_Container(_gui.QMainWindow):
         #Close all modules
         for m in self.modules.values():
             m.close()
-        
+
         #Pass on the close event
         super(Module_Container, self).closeEvent(event)
+
+        #Kills the kernel
+        if self.params['kernel_pid']!=None:
+            import signal
+            _os.kill(self.params['kernel_pid'], signal.SIGTERM)
+
         
     def saveUI(self):
         #Build filename and setting object
@@ -265,6 +271,7 @@ def launchApp(launch_script_main):
     splash.setMask(splash_pix.mask())
     splash.show()
     app.processEvents()
+
 
     import inspect as _inspect
     import IPython

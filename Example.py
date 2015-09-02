@@ -68,12 +68,10 @@ class example(Module_Container):
         w2 = _graph.PyQtGraphWidget(parent = self)
         w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12)
         w4 = TraceManagerWidget()
-        w5 = egg_TreeDictionary(show_header=True)
-        w6 = Hiar_Param_Tree(hiar_storage = h)
-        dp, w7 = egg_DataboxPlot()
+        w5 = Hiar_Param_Tree(hiar_storage = h)
         
         #Add the modules to the container
-        for wi in [w1,w2,w3,w4,w5,w6,w7]:
+        for wi in [w1,w2,w3,w4,w5]:
             self.addModule('mod', wi, initial_pos = _core.Qt.TopDockWidgetArea)
         
         #Decide which graph the trace manager deals with (here both graphs)        
@@ -95,15 +93,15 @@ class example(Module_Container):
         
         
         #Add some tree parametters (taken from spinmob's example)
-        w5.add_parameter('LOL_WUT', 32.5, type='float')
-        w5.add_parameter('Some Category/Some Other Categ./parameter', '32')
-        w5.add_parameter('Some Category/parameter2', values=dict(a=32,b=45,c=17), value=45, type='list')
-        w5.add_parameter('LOL_WUT/test', 'lsdkjf')
-        w5.add_parameter('Numbers/limits(min=-7_max=0)', -3, type='int', limits=(-7,0), step=0.1)
-        w5.add_parameter('Numbers/Units Too!', 1e-6, type='float', siPrefix=True, suffix='V', step=1e-4)
-        btn=w5.add_button('Some Category/test button')
-        def f(): print "hey"
-        btn.signal_clicked.connect(f)
+        # w5.add_parameter('LOL_WUT', 32.5, type='float')
+        # w5.add_parameter('Some Category/Some Other Categ./parameter', '32')
+        # w5.add_parameter('Some Category/parameter2', values=dict(a=32,b=45,c=17), value=45, type='list')
+        # w5.add_parameter('LOL_WUT/test', 'lsdkjf')
+        # w5.add_parameter('Numbers/limits(min=-7_max=0)', -3, type='int', limits=(-7,0), step=0.1)
+        # w5.add_parameter('Numbers/Units Too!', 1e-6, type='float', siPrefix=True, suffix='V', step=1e-4)
+        # btn=w5.add_button('Some Category/test button')
+        # def f(): print "hey"
+        # btn.signal_clicked.connect(f)
         
         
         # Enables autosave.  I disable it at the start so it only
@@ -148,8 +146,6 @@ if __name__ == "__main__":
     import Widgets.IPythonConsoleWidget as _ipy
     from Widgets.TraceManagerWidget import TraceManagerWidget
     from Widgets.Devices.Test_Device import Test_Device
-    from Widgets.egg_TreeDictionary import egg_TreeDictionary
-    from Widgets.egg_DataboxPlot import egg_DataboxPlot
     from Widgets.Hiar_Param_Tree import Hiar_Param_Tree
     from Generic_UI.Others.File_Handler import File_Handler
     from Generic_UI.Extras.PhoneSensors.SensorTCP import SensorTCP
@@ -176,7 +172,7 @@ if __name__ == "__main__":
     # we use the Test_Device trace from module mod2 a lot)
     #trace = win['mod2']['Test_Device']
 #------------------------------------------------------------------------------    
-
+    kernel_pid = _os.getpid()
     
     # Runs a new IPython kernel, that begins the qt event loop.
     #
@@ -187,7 +183,7 @@ if __name__ == "__main__":
     # where <...> under windows is probably C:\Users\<username>
     (current_module, current_ns) = extract_module_locals(depth=0)
     IPython.start_kernel(user_ns = current_ns, 
-                         exec_lines= [u'win = example(autoSave=False, standardPlugins=True)', u'splash.finish(win)'], 
+                         exec_lines= [u'win = example(autoSave=False, standardPlugins=True, kernel_pid=kernel_pid)', u'splash.finish(win)'], 
                          gui='qt', 
                          connection_file='kernel-example.json')
 

@@ -7,7 +7,7 @@ succesivelly calling their save/load functions.
 """
 from Module_Container_Plugin import Module_Container_Plugin
 from PyQt4 import QtGui as _gui
-from Standard_File_Handlers import getFileFormatDict
+from Generic_UI.Others.Standard_File_Handlers import getFileFormatDict
 from File_Handler import File_Handler
 
 def getSupportedFormats():
@@ -33,8 +33,11 @@ class Load_Save(Module_Container_Plugin):
     def save(self):
         allowed_formats = ''
         format_dict = getSupportedFormats()
-        for format_ext in format_dict:allowed_formats += format_dict[format_ext].format_name + ' (' + format_ext + ');;'
+        print format_dict
+        for format_ext in format_dict:
+            allowed_formats += format_dict[format_ext].format_name + ' (' + format_ext + ');;'
         allowed_formats = allowed_formats[:-2]#Remove the 2 extra semi-collumn
+        print allowed_formats
         filename = _gui.QFileDialog.getSaveFileName(caption = "Select a location to save the data...", 
                                          directory = self.container.default_folder,
                                          filter = allowed_formats)
