@@ -83,7 +83,7 @@ class example(Module_Container):
         device = Test_Device()
         w1['t'] = {'x':x, 'y':y, 'pen':'y'}
         w1.addTrace('t', x=x, y=_np.sin(x), pen='r')
-        w1.addTrace('t', y=x)
+        w1.addTrace('t', y=0.05*x)
         w2.addTrace('Test_Device', feeder = device)
         
         #Phone sensors
@@ -156,24 +156,27 @@ if __name__ == "__main__":
 #    _t.sleep(3)    
     
     #Do some application specific work (for this example, create some variables)
-    x = _np.linspace(0,4*_np.pi)
+    x = _np.linspace(0,4*_np.pi, 200)
     y = _np.cos(x)
     
     
     # We can't actually put the code here now, because if the kernel opens up on
     # a new tcp address the connection won't work properly...  This is the awkward
     # part...
-    
-#------------------------------------------------------------------------------    
+    # This is due to the fact that the console is initialized as soon as the windows
+    # is started and it will thus try to connect with a non-existent connection file
+#------------------------------------------------------------------------------
     #Create the object
     #win = example(autoSave=False, standardPlugins=True)
     
     # Here you can add shortcuts for the command line (for example, let's say
     # we use the Test_Device trace from module mod2 a lot)
     #trace = win['mod2']['Test_Device']
-#------------------------------------------------------------------------------    
+#------------------------------------------------------------------------------
+
+    # Get the current process to be able to kill the kernel from inside the client
     kernel_pid = _os.getpid()
-    
+
     # Runs a new IPython kernel, that begins the qt event loop.
     #
     # Other options for the ipython kernel can be found at:
@@ -183,11 +186,9 @@ if __name__ == "__main__":
     # where <...> under windows is probably C:\Users\<username>
     (current_module, current_ns) = extract_module_locals(depth=0)
     IPython.start_kernel(user_ns = current_ns, 
-                         exec_lines= [u'win = example(autoSave=False, standardPlugins=True, kernel_pid=kernel_pid)', u'splash.finish(win)'], 
+                         exec_lines= [u'win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid)', u'splash.finish(win)'], 
                          gui='qt', 
                          connection_file='kernel-example.json')
-
-
 
 
         

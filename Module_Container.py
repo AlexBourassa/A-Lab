@@ -27,7 +27,7 @@ from Docked_Module import Docked_Module
 
 import os as _os
 
-default_params = {'autoSave':True, 'standardPlugins':True, 'kernel_pid':None}
+default_params = {'autoSave':True, 'standardPlugins':True, 'kill_kernel_pid':None}
 
 class Module_Container(_gui.QMainWindow):
     
@@ -168,9 +168,9 @@ class Module_Container(_gui.QMainWindow):
         super(Module_Container, self).closeEvent(event)
 
         #Kills the kernel
-        if self.params['kernel_pid']!=None:
+        if self.params['kill_kernel_pid']!=None:
             import signal
-            _os.kill(self.params['kernel_pid'], signal.SIGTERM)
+            _os.kill(self.params['kill_kernel_pid'], signal.SIGTERM)
 
         
     def saveUI(self):

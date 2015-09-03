@@ -2,8 +2,6 @@
 """
 @author: AlexBourassa
 
-@TODO: Add a plugin that can import data from file and save them
-
 @TODO: Add remote plotting to plot from a different process
 """
 #import os as _os
