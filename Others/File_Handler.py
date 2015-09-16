@@ -16,6 +16,11 @@ class File_Handler():
         self.data = Hiar_Storage()
         self.headers = Hiar_Storage()
         
+    def copy(self):
+        ans = File_Handler(default_filename=self.filename)
+        ans.mergeHandler(self)
+        return ans
+
     def mergeHandler(self, handler):
         """
         This merges another handler's data and headers with the current handler.
@@ -23,8 +28,8 @@ class File_Handler():
         If there a key conflict the new supplied handler will have priority.
         (ie it will overwrite the self entries with it's own values)
         """
-        self.data = self.data.merge(self.data, handler.data)
-        self.headers = self.headers.merge(self.headers, handler.headers)
+        self.data = self.data.merge(handler.data)
+        self.headers = self.headers.merge(handler.headers)
     
 #------------------------------------------------------------------------------ 
 # These two functions should be implemented by all sub_classes of the File_Handler
@@ -45,8 +50,8 @@ class File_Handler():
         containing the loaded values
         """
         if loadMerge:
-            self.data.merge(self.data, new_data)
-            self.headers.merge(self.headers, new_headers)
+            self.data.merge(new_data)
+            self.headers.merge(new_headers)
         else:
             self.data = new_data
             self.headers = new_headers

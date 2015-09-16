@@ -40,7 +40,7 @@ class example(Module_Container):
     """
     
     def __init__(self, **kw):
-        #Initialize the windows
+        #Initialize the windowsb
         super(example, self).__init__(**kw)
         
         #For debuggin purposes only
@@ -53,7 +53,6 @@ class example(Module_Container):
         a.addHeaders(v1='hey', v2=1)
         a.beginGroup('g1.1')
         a.addHeaders(g1_1= ['a','b','c'])
-        #TODO: ADD DICT
         #a.addHeaders(g_dict={'one':1, 'two':2, 'three':3})
         a.endGroup()
         a.endGroup()
@@ -62,6 +61,7 @@ class example(Module_Container):
         h['asfdg'] = 'asfdg'
         a.endGroup()
         h['/g3/g3.1/gAlex/vHey'] = 'hey'
+        self.fh = a
 
         #Create some widgets and objects
         w1 = _graph.PyQtGraphWidget(parent = self)
@@ -69,28 +69,27 @@ class example(Module_Container):
         w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12)
         w4 = TraceManagerWidget()
         w5 = Hiar_Param_Tree(hiar_storage = h)
+        w6 = _2d_graph.PyQtImageWidget(parent = self)
         
         #Add the modules to the container
-        for wi in [w1,w2,w3,w4,w5]:
+        for wi in [w1,w2,w3,w4,w5,w6]:
             self.addModule('mod', wi, initial_pos = _core.Qt.TopDockWidgetArea)
         
         #Decide which graph the trace manager deals with (here both graphs)        
         w4.addGraph('mod',w1)
         w4.addGraph('mod2',w2)  
         
-        
         #Add some data
-        device = Test_Device()
         w1['t'] = {'x':x, 'y':y, 'pen':'y'}
         w1.addTrace('t', x=x, y=_np.sin(x), pen='r')
         w1.addTrace('t', y=0.05*x)
-        w2.addTrace('Test_Device', feeder = device)
+        w2.addTrace('Test_Device', feeder = Test_Device())
+        self.im_device = Raster_Test_Device(w6)
         
         #Phone sensors
 #        phone = SensorTCP()
 #        phone.signal_newFeeder.connect(lambda name, feeder: w2.addTrace(name, feeder = feeder))
 #        self.phone = phone
-        
         
         #Add some tree parametters (taken from spinmob's example)
         # w5.add_parameter('LOL_WUT', 32.5, type='float')
@@ -103,11 +102,10 @@ class example(Module_Container):
         # def f(): print "hey"
         # btn.signal_clicked.connect(f)
         
-        
         # Enables autosave.  I disable it at the start so it only
         # saves if everything loaded well.  Very usefull for debugging, but
         # also probably a good thing to do in general.
-        self.params['autoSave'] = True
+        #self.params['autoSave'] = True
         
 
 
@@ -145,10 +143,11 @@ if __name__ == "__main__":
     import Widgets.GraphWidget.GraphWidget as _graph
     import Widgets.IPythonConsoleWidget as _ipy
     from Widgets.TraceManagerWidget import TraceManagerWidget
-    from Widgets.Devices.Test_Device import Test_Device
+    from Devices.Test_Device import *
     from Widgets.Hiar_Param_Tree import Hiar_Param_Tree
     from Generic_UI.Others.File_Handler import File_Handler
     from Generic_UI.Extras.PhoneSensors.SensorTCP import SensorTCP
+    import Widgets.Graph2D.Graph2D as _2d_graph
     
     
     #Gives me some time to look at the beautiful splash screen
@@ -159,6 +158,10 @@ if __name__ == "__main__":
     x = _np.linspace(0,4*_np.pi, 200)
     y = _np.cos(x)
     
+
+    # Get the current process to be able to kill the kernel from inside the client
+    kernel_pid = _os.getpid()
+
     
     # We can't actually put the code here now, because if the kernel opens up on
     # a new tcp address the connection won't work properly...  This is the awkward
@@ -168,14 +171,11 @@ if __name__ == "__main__":
 #------------------------------------------------------------------------------
     #Create the object
     #win = example(autoSave=False, standardPlugins=True)
-    
+    win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid)
     # Here you can add shortcuts for the command line (for example, let's say
     # we use the Test_Device trace from module mod2 a lot)
     #trace = win['mod2']['Test_Device']
 #------------------------------------------------------------------------------
-
-    # Get the current process to be able to kill the kernel from inside the client
-    kernel_pid = _os.getpid()
 
     # Runs a new IPython kernel, that begins the qt event loop.
     #
@@ -186,7 +186,7 @@ if __name__ == "__main__":
     # where <...> under windows is probably C:\Users\<username>
     (current_module, current_ns) = extract_module_locals(depth=0)
     IPython.start_kernel(user_ns = current_ns, 
-                         exec_lines= [u'win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid)', u'splash.finish(win)'], 
+                         exec_lines= [u'', u'splash.finish(win)'], 
                          gui='qt', 
                          connection_file='kernel-example.json')
 

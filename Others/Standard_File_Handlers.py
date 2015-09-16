@@ -12,7 +12,6 @@ from File_Handler import File_Handler
 import pickle as _p
 import json as _json
 import numpy as _np
-import copy
 from Generic_UI.Others.Hiar_Storage import *
 
 
@@ -89,7 +88,7 @@ class JSON_Handler(File_Handler):
         if filename is None: raise Exception("No filename specified")
 
         # Copy the structure to make the modification only on copies
-        temp_fh = copy.deepcopy(self)
+        temp_fh = self.copy()
         temp_fh.data = self._encode_to_JSON(temp_fh.data)
         temp_fh.headers = self._encode_to_JSON(temp_fh.headers)
 
@@ -111,6 +110,7 @@ class JSON_Handler(File_Handler):
         if filename == None: raise Exception("No filename specified")
         with open(filename, 'r') as f:
             ans = _json.load(f)
+        ans = self._byteify(ans)
         # Make sure to call this one at the end of any load functions for
         # sub-class of File_Handler.  This will add some common functions like
         # loadMerge.
@@ -160,7 +160,23 @@ class JSON_Handler(File_Handler):
 
             return d
 
-        return _recurs_decode(full_d)
+        ans = _recurs_decode(full_d)
+        return ans
+
+    def _byteify(self, input):
+        """
+        This functions should be called on the results of _json.load().
+
+        This ensure that unicode str are converted to Python str type
+        """
+        if isinstance(input, dict):
+            return {self._byteify(key):self._byteify(value) for key,value in input.iteritems()}
+        elif isinstance(input, list):
+            return [self._byteify(element) for element in input]
+        elif isinstance(input, unicode):
+            return input.encode('utf-8')
+        else:
+            return input
 
 
 if __name__=='__main__':

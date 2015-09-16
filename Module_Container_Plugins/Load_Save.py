@@ -33,11 +33,9 @@ class Load_Save(Module_Container_Plugin):
     def save(self):
         allowed_formats = ''
         format_dict = getSupportedFormats()
-        print format_dict
         for format_ext in format_dict:
             allowed_formats += format_dict[format_ext].format_name + ' (' + format_ext + ');;'
         allowed_formats = allowed_formats[:-2]#Remove the 2 extra semi-collumn
-        print allowed_formats
         filename = _gui.QFileDialog.getSaveFileName(caption = "Select a location to save the data...", 
                                          directory = self.container.default_folder,
                                          filter = allowed_formats)
@@ -51,8 +49,9 @@ class Load_Save(Module_Container_Plugin):
             if hasattr(self.container.modules[mod_name], 'save'): 
                 handler.beginGroup(mod_name)
                 self.container.modules[mod_name].save(file_handler = handler)
-                #except: print "Failed to save data for " + mod_name
                 handler.endGroup()
+            else: print "Failed to save data for " + mod_name
+                
         handler.save()
         
     def load(self):
@@ -74,14 +73,18 @@ class Load_Save(Module_Container_Plugin):
             temp_handler = format_dict[ext](default_filename = filename)
             temp_handler.load()
             handler.mergeHandler(temp_handler)
+        print handler
             
         for mod_name in self.container.modules:
-            if hasattr(self.container.modules[mod_name], 'load'): 
+            print "Trying to load " + mod_name
+            if hasattr(self.container.modules[mod_name], 'load'):
                 handler.beginGroup(mod_name)
+                #try:
                 self.container.modules[mod_name].load(file_handler = handler)
-                #except: print "Failed to load data for " + mod_name
+                #except:
+                #    print "Failed to load data from " + mod_name
                 handler.endGroup()
+            else: print "No load function is defined for " + mod_name
 
 
-    
 

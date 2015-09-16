@@ -14,17 +14,19 @@ class Hiar_Storage(_core.QObject):
     slow...  But in most cases that doesn't matter.  (these operation happen
     only once...)
     """    
-    
     # Signals when element is added or removed (parameters are the absolute
     # path of the item and the value itself)
-#    signal_value_added = _core.Signal(str, object)
-#    signal_value_removed = _core.Signal(str, object)#Not currently used...
+    signal_value_added = _core.Signal(str, object)
+    signal_value_removed = _core.Signal(str, object)#Not currently used...
     
     
     def __init__(self):
-        _core.QObject.__init__(self)
+        #_core.QObject.__init__(self)
+        super(Hiar_Storage, self).__init__()
         self.content = Hiar_Group()
+        self.blockSignal = False
         self.prefix = '/'#Using UNIX convention, absolute path start with /
+
         
     def findAll(self, key):
         """
@@ -63,21 +65,31 @@ class Hiar_Storage(_core.QObject):
         #Call the recursive function
         return _flatten(self, dict(), '/')
     
-    def merge(self, old, new):
+    def merge(self, new, old = None):
         """
         This merges another hiar_storage's with the current structure.
         
         If there a key conflict the new supplied storage will have priority.
         (ie it will overwrite the self entries with it's own values)
         """
+        if old == None:
+            old = self
         for value in new:
             #Substitute the values
             if not self.isItemGroup(new[value]): old[value] = new[value]
             #Recursivelly scan the sub_groups
             else: 
-                if value in old: old[value] = self.merge(old[value], new[value])
+                if value in old: old[value] = self.merge(new[value], old[value])
                 else: old[value] = new[value]
         return old
+
+    def copy(self):
+        """
+        Builds a deep copy of the Hiar_Storage
+        """
+        ans = Hiar_Storage()
+        ans.merge(self)
+        return ans
         
     def beginGroup(self, groupName):
         """
@@ -188,7 +200,8 @@ class Hiar_Storage(_core.QObject):
         current_node = self.content
         for current_key in hiar_list: current_node = current_node[current_key]
         return current_node
-         
+
+        
     def __setitem__(self, key, value):
         """
         Set a new item.  If the item already exist it will be overwritten
@@ -210,7 +223,8 @@ class Hiar_Storage(_core.QObject):
         current_node[last_key] = value
         
         #Triggered the add signal
-#        self.signal_value_added.emit(self.getPath(key), value)
+        if not self.blockSignal:
+            self.signal_value_added.emit(self.getPath(key), value)
         
         
     def __str__(self, item=None, prefix_to_line=''):
@@ -231,6 +245,7 @@ class Hiar_Storage(_core.QObject):
             s += self.__str__(item=item[g], prefix_to_line=prefix_to_line+' '*3)
         return s
         
+
     def __iter__(self):
         ans = self[self.prefix]
         return iter(ans)
