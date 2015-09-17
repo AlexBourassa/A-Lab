@@ -42,33 +42,13 @@ class example(Module_Container):
     def __init__(self, **kw):
         #Initialize the windowsb
         super(example, self).__init__(**kw)
-        
-        #For debuggin purposes only
-        a = File_Handler('')
-        x = _np.linspace(0,100)
-        y = _np.cos(x)
-        a.addData(x=x, y=y)
-        h = a.getHeaders()
-        a.beginGroup('g1')
-        a.addHeaders(v1='hey', v2=1)
-        a.beginGroup('g1.1')
-        a.addHeaders(g1_1= ['a','b','c'])
-        #a.addHeaders(g_dict={'one':1, 'two':2, 'three':3})
-        a.endGroup()
-        a.endGroup()
-        h['v0']= 132
-        a.beginGroup('g2')
-        h['asfdg'] = 'asfdg'
-        a.endGroup()
-        h['/g3/g3.1/gAlex/vHey'] = 'hey'
-        self.fh = a
 
         #Create some widgets and objects
         w1 = _graph.PyQtGraphWidget(parent = self)
         w2 = _graph.PyQtGraphWidget(parent = self)
         w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12)
         w4 = TraceManagerWidget()
-        w5 = Hiar_Param_Tree(hiar_storage = h)
+        w5 = Hiar_Param_Tree(file_handler = None)
         w6 = _2d_graph.PyQtImageWidget(parent = self)
         
         #Add the modules to the container
@@ -85,7 +65,14 @@ class example(Module_Container):
         w1.addTrace('t', y=0.05*x)
         w2.addTrace('Test_Device', feeder = Test_Device())
         self.im_device = Raster_Test_Device(w6)
-        
+
+        w5['v0'] = 42
+        w5['g3/g3.1/g3.1.1/vHey'] = 'hey'
+        w5['/g2/asfdg'] = 'asfdf'
+        w5['/g1/v1'] = True
+        w5['g1/v2'] = 2
+        w5.addParam('g1/v2', 10000000, siPrefix = True, suffix = 'Hz') 
+        w5.addParam('g1/g1.1/g1_1', 'b', values = ['a','b','c'], type = 'list') 
         #Phone sensors
 #        phone = SensorTCP()
 #        phone.signal_newFeeder.connect(lambda name, feeder: w2.addTrace(name, feeder = feeder))
@@ -170,8 +157,8 @@ if __name__ == "__main__":
     # is started and it will thus try to connect with a non-existent connection file
 #------------------------------------------------------------------------------
     #Create the object
-    #win = example(autoSave=False, standardPlugins=True)
-    win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid)
+    win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid) #This should eventually go in exec_lines, but having it here makes debugging easier...
+
     # Here you can add shortcuts for the command line (for example, let's say
     # we use the Test_Device trace from module mod2 a lot)
     #trace = win['mod2']['Test_Device']

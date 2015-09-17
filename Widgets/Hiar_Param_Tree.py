@@ -17,87 +17,98 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
     This wraps the PyQtGraph ParameterTree Widget and adds some usefull 
     function to make it work transparently with the Hiar_Storage class.
 
-    Some support for list (no dict), but it's not ready for prime time...
+    No support for list or dict...
     @TODO: If I ever need it, add support for list and/or dict
     """
     
-    def __init__(self, hiar_storage = None):
+    def __init__(self, file_handler = None):
         _pTree.ParameterTree.__init__(self,  parent=None, showHeader=False)
-        
-        # This structure should be used to add and remove parametters
-        if hiar_storage == None: self.content = Hiar_Storage() 
-        else: self.content = hiar_storage
-        
-        self.init_tree()
-        
-    def init_tree(self):
-        """
-        Puts in the initial values in the tree and link the add remove signals
-        """
-        #Define a sub function to allow recursive calls
-        def _buildTree(storage_struct, parent):
-            for key in storage_struct:
-                item = storage_struct[key]
-                #Add the value if it is a leaf node
-                if not self.content.isItemGroup(item): 
-                    self._low_addParam(key, item)
-                #Recursivelly add the sub_groups otherwise
-                else: 
-                    new_parent = _pTypes.GroupParameter(name=key)
-                    parent.addChild(new_parent)
-                    _buildTree(item, new_parent)
-                    
-        #Call the recusrsive function and init the values
         self.root = _pTypes.GroupParameter(name = 'root')
         self.addParameters(self.root, showTop=False)
-        _buildTree(self.content, self.root)
         
-        #Connects the signal trigerring an add of a new value
-        self.content.signal_value_added.connect(lambda path, value: self._addParam(path))
-
-    def _low_addParam(self, key, item):
-        # To avoid repeating code... This should never be called directly
-        if type(item) == list or type(item) == dict:
-            param = Parameter.create(name=key, type=type(item).__name__, values=item)
-        else: 
-            param = Parameter.create(name=key, type=type(item).__name__, value=item)
-            def blockedSet(storage, path, value_fct):
-                storage.blockSignal = True
-                storage[path] = value_fct()
-                storage.blockSignal = False
-            param.sigChanged.connect(lambda: blockedSet(self.content, self.content.getPath(key), param.value))
-        parent.addChild(param)
-
-        #@TODO: Implement _removeParam and link to signal
-    def _addParam(self, path):
-        """
-        This is meant to be called by a signal_value_added from the Hiar_Storage
-        with which the Hiar_Param is associated.
-        """
-        hiar_list = self.content.getHiarList(path)
-        value = hiar_list.pop(-1) #Special Treatement for the last one
+        if file_handler is not None:
+            self.init_tree(file_handler)
         
-        # Find the final group and create all necessary groups along the way
-        current_param = self.root
-        for group in hiar_list:
-            #If the group doesn't exists in the current item, create it
-            if not group in map(lambda x: x.name(), current_param.children()):
-                current_param.addChild(_pTypes.GroupParameter(name=group))
-            current_param = current_param.child(group)
+    def init_tree(self, file_handler):
+        """
+        Puts in the initial values in the tree
+        """
+        #Define a sub function to allow recursive calls
+        def _buildTree(file_handler, parent):
+            headers_struct = file_handler.getHeaders()
+            for key in headers_struct:
+                # Get the options / or the group item
+                opts = headers_struct[key]
 
-        # Check if the parametter is already in the tree
-        v_key = value
-        v_data = self.content[path]
-        if value in map(lambda x: str(x.name()),current_param.children()):
-            if type(v_data) == list or type(v_data) == dict:
-                current_param.child(v_key).addMissingValues(v_data)
-            else: 
-                current_param.child(v_key).setValue(v_data)
-            return
+                #Add the value if it is a leaf node
+                if not headers_struct.isItemGroup(opts): 
+                    # If the item arleady exist
+                    if key in map(lambda x: str(x.name()), parent.children()):
+                        parent.child(key).setOpts(**opts)
+                    else:
+                        # Create and add the Parameter
+                        print opts
+                        param = Parameter.create(**opts)
+                        parent.addChild(param)
 
-        # Add the value to the group
-        self._low_addParam(v_key, v_data)
+                #Recursivelly add the sub_groups otherwise
+                else:
+                    if not key in map(lambda x: str(x.name()), parent.children()):
+                        new_parent = _pTypes.GroupParameter(name=key)
+                        parent.addChild(new_parent)
+                    else:
+                        new_parent = parent.child(key)
+                    file_handler.beginGroup(key)
+                    _buildTree(file_handler, new_parent)
+                    file_handler.endGroup()
+                    
+        #Call the recusrsive function and init the values
+        _buildTree(file_handler, self.root)
 
+    def genFileHandler(self):
+        """
+        This generates a file_handler Object representing all the values in the Tree
+        """
+        def _genHiarStorage(file_handler, cur_item):
+            for item in cur_item.children():
+                if type(item) == _pTypes.GroupParameter:
+                    file_handler.beginGroup(item.name())
+                    _genHiarStorage(file_handler, item)
+                    file_handler.endGroup()
+                else:
+                    file_handler.getHeaders()[item.name()] = item.opts
+
+
+        fh = File_Handler()
+        _genHiarStorage(fh, self.root)
+        return fh
+
+    def addParam(self, path, value, **opts):
+        # Create a new file_handler
+        fh = File_Handler()
+        h = fh.getHeaders()
+
+        # Add the new param to the handler
+        h[path] = opts
+        name = h.getHiarList(path)[-1]
+        h[path]['name'] = name
+        h[path]['value'] = value
+
+        if not 'type' in opts:
+            # Take a guess
+            h[path]['type'] = str(type(value).__name__)
+        
+
+        # Do an init tree with a file handler with single param (kind of
+        # inefficient, but makes the code clearer I think)
+        self.init_tree(fh)
+
+    def __setitem__(self, key, value):
+        self.addParam(key, value = value)
+
+
+
+# @TODO: Re-write the save and load function
     def save(self, file_handler = None):
         """
         This saves the values of the Hiar_Storage structure <content> in the current
@@ -110,13 +121,28 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
         if file_handler == None or type(file_handler)!=File_Handler:
             print "Failed to save the Parametter_Tree since no File_Handler was passed to the save() method"
 
-        # This creates a absolute path adressed flat content dict for the 
-        # Hiar_Storage out of the relative paths taken from self.content
-        rel_flat_content = self.content.flatten()
+        # Generate a file_handler from the tree
+        fh = self.genFileHandler()
+
+        # This creates an absolute path adressed flat content dict for the 
+        # Hiar_Storage out of the relative paths taken from the headers
+        rel_flat_content = fh.getHeaders().flatten()
         abs_flat_content = {}
         for rel_path in rel_flat_content:
             abs_flat_content[file_handler.getHeaders().prefix + rel_path[1:]] = rel_flat_content[rel_path]
         file_handler.addHeaders(**abs_flat_content)
+
+        # Do the same for the data
+        # Note that there is currently nothing being stored in the data, so 
+        # this is curently useless...  I keep it here in case I do want to put
+        # put some data in at some point.
+        rel_flat_content = fh.getData().flatten()
+        abs_flat_content = {}
+        for rel_path in rel_flat_content:
+            abs_flat_content[file_handler.getData().prefix + rel_path[1:]] = rel_flat_content[rel_path]
+        file_handler.addData(**abs_flat_content)
+
+
 
     def load(self, file_handler = None):
         """
@@ -126,18 +152,19 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
         if file_handler == None or type(file_handler)!=File_Handler:
             print "Failed to load the Parametter_Tree since no File_Handler was passed to the load() method"
 
-        def _load(h):
-            groups, values = h.listGroupsAndValues()
-            for g in groups:
-                h.beginGroup(g)
-                self.content.beginGroup(g)
-                _load(h)
-                self.content.endGroup()
-                h.endGroup()
-            for v in values:
-                self.content[v] = h[v]
-        self.content.resetToRoot()
-        _load(file_handler.getHeaders())
+        self.init_tree(file_handler)
+        # def _load(h):
+        #     groups, values = h.listGroupsAndValues()
+        #     for g in groups:
+        #         h.beginGroup(g)
+        #         self.content.beginGroup(g)
+        #         _load(h)
+        #         self.content.endGroup()
+        #         h.endGroup()
+        #     for v in values:
+        #         self.content[v] = h[v]
+        # self.content.resetToRoot()
+        # _load(file_handler.getHeaders())
 
 
 #------------------------------------------------------------------------------
