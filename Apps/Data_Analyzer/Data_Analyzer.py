@@ -30,8 +30,11 @@ class Data_Analyzer(Module_Container):
     """
     
     def __init__(self, **kw):
-        #Initialize the windowsb
+        # Initialize the windowsb
         super(Data_Analyzer, self).__init__(**kw)
+
+        # Set the window name
+        self.setWindowTitle("Data Analyzer")
 
         # Create some widgets and objects
         self.main_plot      = _graph.PyQtGraphWidget(parent = self)
