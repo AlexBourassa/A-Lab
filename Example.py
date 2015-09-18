@@ -92,7 +92,7 @@ class example(Module_Container):
         # Enables autosave.  I disable it at the start so it only
         # saves if everything loaded well.  Very usefull for debugging, but
         # also probably a good thing to do in general.
-        #self.params['autoSave'] = True
+        self.params['autoSave'] = True
         
 
 

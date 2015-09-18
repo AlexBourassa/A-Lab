@@ -56,7 +56,6 @@ class File_Handler():
             self.data = new_data
             self.headers = new_headers
 
-
     def beginGroup(self, groupName):
         """
         Enter a new group. Make sure to always pair a beginGroup with an endGroup
@@ -70,6 +69,15 @@ class File_Handler():
         """
         self.data.endGroup()
         self.headers.endGroup()
+
+    def resetToRoot(self):
+        """
+        This method reset the path or group to root ('/') for both Hiar_Storage.
+        
+        This is equivalent to closing all groups that have been openned
+        """
+        self.data.resetToRoot()
+        self.headers.resetToRoot()
         
     def addData(self, **kwargs):
         """
@@ -120,6 +128,32 @@ class File_Handler():
         sub-class documentation.        
         """
         return self.headers
+
+    def findAll(self, key, present_in_both = True):
+        """
+        Find all instances of <key> in the handler.  Return a dict of the absolute
+        path.
+
+        If <present_in_both> is True: To be considered a valid path it must be found in both self.data and
+        self.headers.
+        """
+        # Find the key in both 
+        data_path = self.data.findAll(key)
+        headers_path = self.headers.findAll(key)
+
+        # If we don't need it present in both
+        paths = data_path.keys()
+        paths2 = headers_path.keys()
+        if not present_in_both:
+            paths = paths + list(set(paths2) - set(paths))
+            return paths
+
+        # Eliminate the entry that don't appear in both
+        for path in paths:
+            if not path in headers_path.keys():
+                paths.pop(path)
+
+        return paths
         
     def __str__(self):
 #        tab = ' '*3

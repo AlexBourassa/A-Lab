@@ -18,6 +18,14 @@ class View_Menu(Module_Container_Plugin):
         #Build view menu
         self.menu['View'] = dict()
         self.menu['View']['_QMenu'] = self.menu['_QMenuBar'].addMenu('View')
+
+        # Add the show/hide all
+        self.menu['View']['Show All'] = _gui.QAction('Show All', self['_QMenu'])
+        self.menu['View']['Hide All'] = _gui.QAction('Hide All', self['_QMenu'])
+        self['_QMenu'].addAction(self['Show All'])
+        self['_QMenu'].addAction(self['Hide All'])
+        self['Show All'].triggered.connect(lambda: self.showAll())
+        self['Hide All'].triggered.connect(lambda: self.hideAll())
         
         #Update if modules are added or removed
         self.container.moduleAdded.connect(lambda x: self.updateViewMenu())
@@ -45,13 +53,29 @@ class View_Menu(Module_Container_Plugin):
             if not m in self.container.modules.keys():
                 self['_QMenu'].removeAction(self[m])
                 del self.menu['View'][m]
-                
-        
+
+    def hideAll(self):
+        """
+        Uncheck all the modules to hide them all
+        """
+        for mod in self:
+            self[mod].setChecked(False)
+            self.toggleVisible()
+
+    def showAll(self):
+        """
+        Check all the modules to show them all
+        """
+        for mod in self:
+            self[mod].setChecked(True)
+            self.toggleVisible()
     
     #By default these ignore the _QMenu entry (except for __getitem__)
     def __iter__(self):
         k = self.menu['View'].keys()
         k.remove('_QMenu')
+        k.remove('Show All')
+        k.remove('Hide All')
         return iter(k)
         
     def __len__(self):

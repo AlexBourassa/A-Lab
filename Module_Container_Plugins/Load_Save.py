@@ -20,17 +20,25 @@ def getSupportedFormats():
 
 class Load_Save(Module_Container_Plugin):
     
-    def __init__(self, parent_container):
+    def __init__(self, parent_container, standard_menu = True):
         Module_Container_Plugin.__init__(self, parent_container)
         self.menu = self.container.menu
         
-        #Add load/Save Actions to File menu
-        self.menu['File']['Save'] = self.menu['File']['_QMenu'].addAction('Save...')
-        self.menu['File']['Save'].triggered.connect(lambda: self.save())
-        self.menu['File']['Load'] = self.menu['File']['_QMenu'].addAction('Load...')
-        self.menu['File']['Load'].triggered.connect(lambda: self.load())
+        # Add load/Save Actions to File menu
+        if standard_menu:
+            self.menu['File']['Save'] = self.menu['File']['_QMenu'].addAction('Save...')
+            self.menu['File']['Save'].triggered.connect(lambda: self.save())
+            self.menu['File']['Load'] = self.menu['File']['_QMenu'].addAction('Load...')
+            self.menu['File']['Load'].triggered.connect(lambda: self.load())
         
-    def save(self):
+    def save(self, modules=None):
+        """
+        Issues a save command for all modules in modules list.  If <modules>==None, 
+        then all the modules in the container will be issued the command.
+
+        <modules> is a list of module names (eg ['mod', 'mod5'])
+        """
+        # Select the filename
         allowed_formats = ''
         format_dict = getSupportedFormats()
         for format_ext in format_dict:
@@ -43,18 +51,27 @@ class Load_Save(Module_Container_Plugin):
             print "Cancelling save..."
             return
         
+        # Get the appropriate File_Handler
         ext = '*.' + filename.split('.')[-1]
         handler = format_dict[ext](default_filename = filename)
-        for mod_name in self.container.modules:
-            if hasattr(self.container.modules[mod_name], 'save'): 
+
+        # Set the list of modules
+        if modules is None: modules = self.container.modules.keys()
+
+        for mod_name in modules:
+            if not mod_name in self.container.modules:
+                print "No modules named " + mod_name
+            elif hasattr(self.container.modules[mod_name], 'save'): 
                 handler.beginGroup(mod_name)
                 self.container.modules[mod_name].save(file_handler = handler)
                 handler.endGroup()
             else: print "Failed to save data for " + mod_name
                 
         handler.save()
-        
-    def load(self):
+
+
+    def _loadToHandler(self):
+        # Select the filename
         allowed_formats = ''
         format_dict = getSupportedFormats()
         for format_ext in format_dict:allowed_formats += format_dict[format_ext].format_name + ' (' + format_ext + ');;'
@@ -67,17 +84,33 @@ class Load_Save(Module_Container_Plugin):
             print "Cancelling loads..."
             return
         
+        # Fill the file handler with the data in all files
         handler = File_Handler() #Begin with an empty file_handler
         for filename in filenames:
             ext = '*.' + filename.split('.')[-1]
             temp_handler = format_dict[ext](default_filename = filename)
             temp_handler.load()
             handler.mergeHandler(temp_handler)
-        print handler
-            
-        for mod_name in self.container.modules:
-            print "Trying to load " + mod_name
-            if hasattr(self.container.modules[mod_name], 'load'):
+        return handler
+
+        
+    def load(self, modules=None):
+        """
+        Issues a load command for all modules in modules list.  If <modules>==None, 
+        then all the modules in the container will be issued the command.
+
+        <modules> is a list of module names (eg ['mod', 'mod5'])
+        """
+        handler = self._loadToHandler()
+
+        # Set the list of modules
+        if modules is None: modules = self.container.modules.keys()
+        
+        # Issue the load command
+        for mod_name in modules:
+            if not mod_name in self.container.modules:
+                print "No modules named " + mod_name
+            elif hasattr(self.container.modules[mod_name], 'load'):
                 handler.beginGroup(mod_name)
                 #try:
                 self.container.modules[mod_name].load(file_handler = handler)
@@ -85,6 +118,24 @@ class Load_Save(Module_Container_Plugin):
                 #    print "Failed to load data from " + mod_name
                 handler.endGroup()
             else: print "No load function is defined for " + mod_name
+
+    def loadKey2Mod(self, key, mod_name, handler = None, present_in_both = True):
+        """
+        1. Loads a selected file into a File_Handler. If no handlers was supplied
+        2. Look for all groups named <key>
+        3. Call the load function of <mod> with each of those groups
+        """
+        if handler == None:
+            handler = self._loadToHandler()
+        paths = handler.findAll(key, present_in_both = present_in_both)
+        for path in paths:
+            hiar_list = handler.data.getHiarList(path)
+            hiar_list.pop(-1)
+            for group in hiar_list:
+                handler.beginGroup(group)
+                self.container.modules[mod_name].load(file_handler = handler)
+            handler.resetToRoot()
+
 
 
 

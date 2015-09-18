@@ -47,7 +47,6 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
                         parent.child(key).setOpts(**opts)
                     else:
                         # Create and add the Parameter
-                        print opts
                         param = Parameter.create(**opts)
                         parent.addChild(param)
 
@@ -106,6 +105,14 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
     def __setitem__(self, key, value):
         self.addParam(key, value = value)
 
+    def __getitem__(self, key):
+        hiar_list = key.split('/')
+        while '' in hiar_list: hiar_list.remove('')
+        current_node = self.root
+        for item in hiar_list:
+            current_node = current_node.child(item)
+        return current_node
+
 
 
 # @TODO: Re-write the save and load function
@@ -123,6 +130,9 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
 
         # Generate a file_handler from the tree
         fh = self.genFileHandler()
+
+        # Begin a group that specified that the data that follows is from a Hiar_Parm_Tree
+        file_handler.beginGroup('::Hiar_Param_Tree')
 
         # This creates an absolute path adressed flat content dict for the 
         # Hiar_Storage out of the relative paths taken from the headers
@@ -142,6 +152,9 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
             abs_flat_content[file_handler.getData().prefix + rel_path[1:]] = rel_flat_content[rel_path]
         file_handler.addData(**abs_flat_content)
 
+        # End ::Hiar_Param_Tree the group
+        file_handler.endGroup()
+
 
 
     def load(self, file_handler = None):
@@ -149,70 +162,62 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
         Loads the values from the file_handler headers to the content variable
         """
         # Check that a file_hanlder was received
-        if file_handler == None or type(file_handler)!=File_Handler:
+        if file_handler == None:
             print "Failed to load the Parametter_Tree since no File_Handler was passed to the load() method"
+            return
 
+        file_handler.beginGroup('::Hiar_Param_Tree')
         self.init_tree(file_handler)
-        # def _load(h):
-        #     groups, values = h.listGroupsAndValues()
-        #     for g in groups:
-        #         h.beginGroup(g)
-        #         self.content.beginGroup(g)
-        #         _load(h)
-        #         self.content.endGroup()
-        #         h.endGroup()
-        #     for v in values:
-        #         self.content[v] = h[v]
-        # self.content.resetToRoot()
-        # _load(file_handler.getHeaders())
+        file_handler.endGroup()
+
 
 
 #------------------------------------------------------------------------------
 #       @TODO: Add a parameter item class for dicts
 #------------------------------------------------------------------------------
 
-class ListParameter_Extended(_pTypes.ListParameter):
-    """
-    This expand the ListParameter class and add some functionalities.
+# class ListParameter_Extended(_pTypes.ListParameter):
+#     """
+#     This expand the ListParameter class and add some functionalities.
 
-    Namelly:
-        - The ability clear and reset all the elements at the same time.
-        - The ability to simply add the missing elements.
+#     Namelly:
+#         - The ability clear and reset all the elements at the same time.
+#         - The ability to simply add the missing elements.
 
-    """
-    def __init__(self, **opts):
-        _pTypes.ListParameter.__init__(self, **opts)
+#     """
+#     def __init__(self, **opts):
+#         _pTypes.ListParameter.__init__(self, **opts)
 
-    def replaceValues(self, values):
-        """
-        Replace the entire list with the <values> list
-        """
-        values = map(str,values)
-        widget = self.items.items()[0][0].widget
-        widget.clear()
-        widget.addItems(values)
+#     def replaceValues(self, values):
+#         """
+#         Replace the entire list with the <values> list
+#         """
+#         values = map(str,values)
+#         widget = self.items.items()[0][0].widget
+#         widget.clear()
+#         widget.addItems(values)
 
-    def addMissingValues(self, values):
-        """
-        Add the missing element in values to the list
-        """
-        values = map(str,values)
-        widget = self.items.items()[0][0].widget
-        current_values = self.values()
-        for element in values:
-            if not element in current_values:
-                widget.addItem(element)
+#     def addMissingValues(self, values):
+#         """
+#         Add the missing element in values to the list
+#         """
+#         values = map(str,values)
+#         widget = self.items.items()[0][0].widget
+#         current_values = self.values()
+#         for element in values:
+#             if not element in current_values:
+#                 widget.addItem(element)
 
-    def values(self):
-        """
-        Returns the complete list of values
-        """
-        widget = self.items.items()[0][0].widget
-        ans = [str(widget.itemText(i)) for i in range(widget.count())]
-        return ans
+#     def values(self):
+#         """
+#         Returns the complete list of values
+#         """
+#         widget = self.items.items()[0][0].widget
+#         ans = [str(widget.itemText(i)) for i in range(widget.count())]
+#         return ans
 
-    def __contains__(self, text):
-        text = str(text)
-        return text in self.values()
+#     def __contains__(self, text):
+#         text = str(text)
+#         return text in self.values()
 
-registerParameterType('list', ListParameter_Extended, override=True) 
+# registerParameterType('list', ListParameter_Extended, override=True) 

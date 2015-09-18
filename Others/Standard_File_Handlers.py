@@ -42,7 +42,8 @@ class Pickle_Handler(File_Handler):
         if filename is None: filename = self.filename
         if filename is None: raise Exception("No filename specified")
         with open(filename, 'w') as f:
-            _p.dump([self.data, self.headers], f)
+            #Store the content only since the full object QObject cannot be dumped
+            _p.dump([self.data.content, self.headers.content], f)
 
     def load(self, filename = None, **kw):
         """
@@ -58,10 +59,19 @@ class Pickle_Handler(File_Handler):
         if filename == None: raise Exception("No filename specified")
         with open(filename, 'r') as f:
             ans = _p.load(f)
+
+        # Convert the info in the ans in a Hiar_Storage format
+        hs_data = Hiar_Storage()
+        hs_headers = Hiar_Storage()
+
+        # Replace the content
+        hs_data.content = ans[0]
+        hs_headers.content = ans[1]
+
         # Make sure to call this one at the end of any load functions for
         # sub-class of File_Handler.  This will add some common functions like
         # loadMerge.
-        self._load_complete(ans[0], ans[1], **kw) 
+        self._load_complete(hs_data, hs_headers, **kw) 
         
 
 

@@ -275,7 +275,6 @@ class PyQtGraphWidget(GraphWidget):
             self.legend.removeItem(self.pyqt_traces[name])
             self.legend.removeItem(name)
             self.plot_item.removeItem(self.pyqt_traces[name])
-            print "removed"
         self.pyqt_traces[name].visible = visible
             
         
