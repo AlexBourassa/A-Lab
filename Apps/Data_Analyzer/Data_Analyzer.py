@@ -16,6 +16,7 @@ _os.path.join(_os.getcwd())
 
 #@Bug: I have to load this one first or else PyQt defaults to V1
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
@@ -30,7 +31,7 @@ class Data_Analyzer(Module_Container):
     """
     
     def __init__(self, **kw):
-        # Initialize the windowsb
+        # Initialize the windows
         super(Data_Analyzer, self).__init__(**kw)
 
         # Set the window name

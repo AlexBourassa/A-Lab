@@ -10,9 +10,12 @@ from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 from PyQt4 import uic as _uic
 import os as _os
+import numpy as _np
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+import matplotlib.pyplot as _plt
 
 import Fitter_Eq as fit
-import numpy as _np
+
 
 
 class Fitter(Graph_Widget_Plugin):
@@ -65,8 +68,10 @@ class Fitter_Control_Widget(_gui.QWidget):
         self.kwargs = kwargs
         self.fitTraces = dict()
         self._fitted_name_association = dict()
-        
+
+        self.prepareLatex()
         self.generateCtrls()
+
         
         #Build a quick function to remove an item by name from the signal list
         def removeItemByName(name):
@@ -77,7 +82,20 @@ class Fitter_Control_Widget(_gui.QWidget):
         
         self.graph.traceAdded[str].connect(lambda x: self.signalSelect.addItem(x))
         self.graph.traceRemoved[str].connect(lambda x: self.signalSelect.removeItemByName(x))
-        
+
+    def prepareLatex(self):
+        # Get window background color
+        bg = self.palette().window().color()
+        cl = (bg.redF(), bg.greenF(), bg.blueF())
+
+        #Get figure and make it the same color as background
+        self.fig = _plt.figure()
+        self.latexHolder = FigureCanvas(self.fig)
+        self.latexHolder.setFixedHeight(60)
+        self.matplotlib_container.addWidget(self.latexHolder)
+        #self.fig = self.latexMPLholder.figure
+        self.fig.set_edgecolor(cl)
+        self.fig.set_facecolor(cl)
 
     def generateCtrls(self):
         
@@ -268,17 +286,9 @@ class Fitter_Control_Widget(_gui.QWidget):
         """
         Generate and show the latex equation
         """
-        # Get window background color
-        bg = self.palette().window().color()
-        cl = (bg.redF(), bg.greenF(), bg.blueF())
-        
-        #Get figure and make it the same color as background
-        fig = self.latexMPLholder.figure
-        fig.set_edgecolor(cl)
-        fig.set_facecolor(cl)
 
         # Clear figure
-        fig.clf()
+        self.fig.clf()
         
         #Fetch fct name and variables
         fctName = str(self.fitFctSelect.currentText())
@@ -287,13 +297,14 @@ class Fitter_Control_Widget(_gui.QWidget):
         latex = self.fitFct[fctName].getLatex()
             
         # Set figure title
-        self.latexHolder = fig.suptitle(latex, 
-                                        y = 0.5,
-                                        x = 0.5,
-                                        horizontalalignment='center',
-                                        verticalalignment='center',
-                                        size = 18)
-        self.latexMPLholder.draw()
+        self.fig.suptitle(latex,
+                            y = 0.5,
+                            x = 0.5,
+                            horizontalalignment='center',
+                            verticalalignment='center',
+                            size = 18)
+        self.latexHolder.draw()
+        #self.latexMPLholder.draw()
         
     def guessP(self):
         """

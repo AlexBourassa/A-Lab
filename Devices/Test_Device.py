@@ -57,6 +57,7 @@ class Test_Device(_gui.QWidget):
         
         
 
+
 class Raster_Test_Device(_gui.QWidget):
     signal_newData = _core.Signal(_np.ndarray)
 

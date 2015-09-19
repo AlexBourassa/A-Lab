@@ -73,21 +73,12 @@ class example(Module_Container):
         w5['g1/v2'] = 2
         w5.addParam('g1/v2', 10000000, siPrefix = True, suffix = 'Hz') 
         w5.addParam('g1/g1.1/g1_1', 'b', values = ['a','b','c'], type = 'list') 
-        #Phone sensors
+
+        # Exeperimenting with Phone sensors
 #        phone = SensorTCP()
 #        phone.signal_newFeeder.connect(lambda name, feeder: w2.addTrace(name, feeder = feeder))
 #        self.phone = phone
-        
-        #Add some tree parametters (taken from spinmob's example)
-        # w5.add_parameter('LOL_WUT', 32.5, type='float')
-        # w5.add_parameter('Some Category/Some Other Categ./parameter', '32')
-        # w5.add_parameter('Some Category/parameter2', values=dict(a=32,b=45,c=17), value=45, type='list')
-        # w5.add_parameter('LOL_WUT/test', 'lsdkjf')
-        # w5.add_parameter('Numbers/limits(min=-7_max=0)', -3, type='int', limits=(-7,0), step=0.1)
-        # w5.add_parameter('Numbers/Units Too!', 1e-6, type='float', siPrefix=True, suffix='V', step=1e-4)
-        # btn=w5.add_button('Some Category/test button')
-        # def f(): print "hey"
-        # btn.signal_clicked.connect(f)
+
         
         # Enables autosave.  I disable it at the start so it only
         # saves if everything loaded well.  Very usefull for debugging, but
