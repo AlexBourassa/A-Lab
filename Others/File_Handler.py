@@ -6,7 +6,7 @@ This module contains the base class for all other File_Handler and the
 Hiar_Storage class which it uses to handle headers.
 """
 import numpy as _np
-from Generic_UI.Others.Hiar_Storage import *
+from A_Lab.Others.Hiar_Storage import *
 
 
 class File_Handler():

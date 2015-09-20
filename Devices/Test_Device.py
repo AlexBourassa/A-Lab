@@ -8,12 +8,12 @@ from PyQt4 import QtCore as _core
 import numpy as _np
 import time as _t
 
-class Test_Device(_gui.QWidget):
+class Test_Device(_core.QObject):
     
     signal_newData = _core.Signal(_np.ndarray, _np.ndarray)
     
     def __init__(self, dataSize = 100, amplitude = 0.2, center = 0, addedGaussian=True, period=50, debug=True, **kw):
-        _gui.QWidget.__init__(self)
+        _core.QObject.__init__(self)
 
         # Make these variables public
         self.dataSize = dataSize
@@ -58,7 +58,7 @@ class Test_Device(_gui.QWidget):
         
 
 
-class Raster_Test_Device(_gui.QWidget):
+class Raster_Test_Device(_core.QObject):
     signal_newData = _core.Signal(_np.ndarray)
 
     def __init__(self, imv_widget, point_rate = 5000, point_packet_size = 500, debug=True, **kw):
@@ -68,7 +68,7 @@ class Raster_Test_Device(_gui.QWidget):
         @param point_rate Approximate number of points per seconds to be generated
         @param point_packet_siza Number of points to be "buffered" betweeen redraw
         """
-        _gui.QWidget.__init__(self)
+        _core.QObject.__init__(self)
 
         # Set variable public
         self.period = int((1000*point_packet_size)/point_rate)

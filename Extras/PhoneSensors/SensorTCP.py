@@ -10,7 +10,7 @@ from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 
 import subprocess as _subp
 import atexit 
-from Generic_UI.Widgets.GraphWidget.GraphTrace import Generic_TraceFeeder
+from A_Lab.Widgets.GraphWidget.GraphTrace import Generic_TraceFeeder
 import numpy as _np
 import os as _os
 

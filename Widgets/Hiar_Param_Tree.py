@@ -9,8 +9,8 @@ from pyqtgraph.parametertree.Parameter import *
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
-from Generic_UI.Others.Hiar_Storage import Hiar_Storage
-from Generic_UI.Others.File_Handler import File_Handler
+from A_Lab.Others.Hiar_Storage import Hiar_Storage
+from A_Lab.Others.File_Handler import File_Handler
 
 class Hiar_Param_Tree(_pTree.ParameterTree):
     """

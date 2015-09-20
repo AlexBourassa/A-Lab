@@ -31,9 +31,9 @@ from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
-from Module_Container import *
+import Module_Container as Module_Container
 
-class example(Module_Container):
+class example(Module_Container.Module_Container):
     """
     Here is an example of how to build a UI by putting together a whole bunch
     pre-made widgets.  
@@ -108,7 +108,8 @@ if __name__ == "__main__":
     app = _gui.QApplication([])
     
     # Create and display the splash screen
-    splash_pix = _gui.QPixmap('SplashScreen.png')
+    im_path = _os.path.join(_os.path.dirname(Module_Container.__file__), 'SplashScreen.png')
+    splash_pix = _gui.QPixmap(im_path)
     splash = _gui.QSplashScreen(splash_pix, _core.Qt.WindowStaysOnTopHint)
     splash.setMask(splash_pix.mask())
     splash.show()
@@ -123,8 +124,8 @@ if __name__ == "__main__":
     from Widgets.TraceManagerWidget import TraceManagerWidget
     from Devices.Test_Device import *
     from Widgets.Hiar_Param_Tree import Hiar_Param_Tree
-    from Generic_UI.Others.File_Handler import File_Handler
-    from Generic_UI.Extras.PhoneSensors.SensorTCP import SensorTCP
+    from A_Lab.Others.File_Handler import File_Handler
+    from A_Lab.Extras.PhoneSensors.SensorTCP import SensorTCP
     import Widgets.Graph2D.Graph2D as _2d_graph
     
     

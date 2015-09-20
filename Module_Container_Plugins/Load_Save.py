@@ -7,8 +7,8 @@ succesivelly calling their save/load functions.
 """
 from Module_Container_Plugin import Module_Container_Plugin
 from PyQt4 import QtGui as _gui
-from Generic_UI.Others.Standard_File_Handlers import getFileFormatDict
-from Generic_UI.Others.File_Handler import File_Handler
+from A_Lab.Others.Standard_File_Handlers import getFileFormatDict
+from A_Lab.Others.File_Handler import File_Handler
 
 def getSupportedFormats():
     """

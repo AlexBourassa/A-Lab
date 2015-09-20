@@ -12,7 +12,7 @@ from File_Handler import File_Handler
 import pickle as _p
 import json as _json
 import numpy as _np
-from Generic_UI.Others.Hiar_Storage import *
+from A_Lab.Others.Hiar_Storage import *
 
 
 def getFileFormatDict():

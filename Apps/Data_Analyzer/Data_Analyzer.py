@@ -2,7 +2,7 @@
 @author: AlexBourassa
 
 @details: This file give a method of loading and analysing data.
-It currently only supports the Standard_File_Handlers formats (that is data which was saved by a Generic_Ui) but could be made to eventually support more
+It currently only supports the Standard_File_Handlers formats (that is data which was saved by a A_Lab) but could be made to eventually support more
 
 """
 
@@ -20,11 +20,11 @@ from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
-from Generic_UI.Module_Container import *
+import A_Lab.Module_Container as Module_Container
 
 kernel_name = 'kernel-analyzer.json'
 
-class Data_Analyzer(Module_Container):
+class Data_Analyzer(Module_Container.Module_Container):
     """
     Here is an example of how to build a UI by putting together a whole bunch
     pre-made widgets.  
@@ -116,7 +116,8 @@ if __name__ == "__main__":
     app = _gui.QApplication([])
     
     # Create and display the splash screen
-    splash_pix = _gui.QPixmap('SplashScreen.png')
+    im_path = _os.path.join(_os.path.dirname(Module_Container.__file__), 'SplashScreen.png')
+    splash_pix = _gui.QPixmap(im_path)
     splash = _gui.QSplashScreen(splash_pix, _core.Qt.WindowStaysOnTopHint)
     splash.setMask(splash_pix.mask())
     splash.show()
@@ -126,15 +127,15 @@ if __name__ == "__main__":
     import IPython
     from IPython.utils.frame import extract_module_locals
     import numpy as _np
-    import Generic_UI.Widgets.GraphWidget.GraphWidget as _graph
-    import Generic_UI.Widgets.IPythonConsoleWidget as _ipy
-    from Generic_UI.Widgets.TraceManagerWidget import TraceManagerWidget
-    from Generic_UI.Devices.Test_Device import *
-    from Generic_UI.Widgets.Hiar_Param_Tree import Hiar_Param_Tree
-    from Generic_UI.Others.File_Handler import File_Handler
-    import Generic_UI.Widgets.Graph2D.Graph2D as _2d_graph
-    from Generic_UI.Module_Container_Plugins.View_Menu import View_Menu
-    from Generic_UI.Module_Container_Plugins.Load_Save import Load_Save
+    import A_Lab.Widgets.GraphWidget.GraphWidget as _graph
+    import A_Lab.Widgets.IPythonConsoleWidget as _ipy
+    from A_Lab.Widgets.TraceManagerWidget import TraceManagerWidget
+    from A_Lab.Devices.Test_Device import *
+    from A_Lab.Widgets.Hiar_Param_Tree import Hiar_Param_Tree
+    from A_Lab.Others.File_Handler import File_Handler
+    import A_Lab.Widgets.Graph2D.Graph2D as _2d_graph
+    from A_Lab.Module_Container_Plugins.View_Menu import View_Menu
+    from A_Lab.Module_Container_Plugins.Load_Save import Load_Save
     
 
     # Get the current process to be able to kill the kernel from inside the client
@@ -148,7 +149,7 @@ if __name__ == "__main__":
     # is started and it will thus try to connect with a non-existent connection file
 #------------------------------------------------------------------------------
     #Create the object
-    win = Data_Analyzer(autoSave=False, standardPlugins=False, kill_kernel_pid=kernel_pid, default_folder = 'C:\\Python27\\Lib\\site-packages\\Generic_UI\\Apps\\Data_Analyzer') #This should eventually go in exec_lines, but having it here makes debugging easier...
+    win = Data_Analyzer(autoSave=False, standardPlugins=False, kill_kernel_pid=kernel_pid, default_folder = 'C:\\Python27\\Lib\\site-packages\\A_Lab\\Apps\\Data_Analyzer') #This should eventually go in exec_lines, but having it here makes debugging easier...
 
     # Here you can add shortcuts for the command line (for example, let's say
     # we use the Test_Device trace from module mod2 a lot)

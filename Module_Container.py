@@ -54,6 +54,8 @@ class Module_Container(_gui.QMainWindow):
         
         #Initialize the windows
         _gui.QMainWindow.__init__(self)
+
+        self.setWindowTitle('A_Lab Container')
         
         #Set some docking options
         self.setDockOptions(_gui.QMainWindow.AnimatedDocks | 
