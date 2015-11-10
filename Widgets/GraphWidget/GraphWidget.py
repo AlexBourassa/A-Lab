@@ -14,10 +14,10 @@ from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
 import pyqtgraph as _pg
-from GraphTrace import GraphTrace
-from Trace_View_Menu import Trace_View_Menu
-from Transform_Menu import Transform_Menu
-from Fitter import Fitter
+from A_Lab.Widgets.GraphWidget.GraphTrace import GraphTrace
+from A_Lab.Widgets.GraphWidget.Trace_View_Menu import Trace_View_Menu
+from A_Lab.Widgets.GraphWidget.Transform_Menu import Transform_Menu
+from A_Lab.Widgets.GraphWidget.Fitter import Fitter
 import numpy as _np
 
 class GraphWidget(_gui.QWidget):
@@ -88,12 +88,12 @@ class GraphWidget(_gui.QWidget):
     def getRegionData(self, trace_name, verbose=True, **kw):
         x,y = self.traces[trace_name].getData(**kw)
         if verbose:
-            print "No getRegionData() function defined for this GraphWidget.  Returning all data..."
+            print("No getRegionData() function defined for this GraphWidget.  Returning all data...")
         return x,y
         
     def saveSettings(self, settingsObj = None, **kwargs):
         if type(settingsObj) != _core.QSettings:
-            print "No QSetting object was provided"
+            print("No QSetting object was provided")
         else:
             for plug_name in self.plugins:
                 settingsObj.beginGroup(plug_name)
@@ -102,7 +102,7 @@ class GraphWidget(_gui.QWidget):
     
     def loadSettings(self, settingsObj = None, **kwargs):
         if type(settingsObj) != _core.QSettings:
-            print "No QSetting object was provided"
+            print("No QSetting object was provided")
         else:
             for plug_name in self.plugins:
                 settingsObj.beginGroup(plug_name)

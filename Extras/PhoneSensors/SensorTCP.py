@@ -46,7 +46,7 @@ class TCP_Device(_core.QObject):
         _core.QObject.__init__(self)    
         
         if spanThread:
-            print "Spanning new Thread..."
+            print("Spanning new Thread...")
             self._thread = _core.QThread()
             self.moveToThread(self._thread)
             self._thread.start()
@@ -88,10 +88,10 @@ class TCP_Device(_core.QObject):
         ie Checks if some data was received, parses it and emits data
         """
         #Waits for incomming connection
-        print "Listening for connection..."
+        print("Listening for connection...")
         self.socket.listen(1)
         self.conn, self.connAddr = self.socket.accept()
-        print "Openning new connection..."
+        print("Openning new connection...")
         
         #Serves it forever (ie until it closes)
         while True:
@@ -141,14 +141,14 @@ class SensorTCP(TCP_Device):
                 d = d[1:-1]#Cut out the []
                 
                 #Get the data as an array of float
-                d = map(float,d.split(','))
+                d = list(map(float,d.split(',')))
             except:
-                if self.verbose: print "Transmission incomplete: Missed a point."
+                if self.verbose: print("Transmission incomplete: Missed a point.")
                 continue
             
             #Remove bad names   
             if name == '': 
-                if self.verbose: print "Transmission incomplete: Missed a point."
+                if self.verbose: print("Transmission incomplete: Missed a point.")
                 continue
             
             #Create the feeders if they did not exist before

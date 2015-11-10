@@ -43,7 +43,7 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
                 #Add the value if it is a leaf node
                 if not headers_struct.isItemGroup(opts): 
                     # If the item arleady exist
-                    if key in map(lambda x: str(x.name()), parent.children()):
+                    if key in [str(x.name()) for x in parent.children()]:
                         parent.child(key).setOpts(**opts)
                     else:
                         # Create and add the Parameter
@@ -52,7 +52,7 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
 
                 #Recursivelly add the sub_groups otherwise
                 else:
-                    if not key in map(lambda x: str(x.name()), parent.children()):
+                    if not key in [str(x.name()) for x in parent.children()]:
                         new_parent = _pTypes.GroupParameter(name=key)
                         parent.addChild(new_parent)
                     else:
@@ -126,7 +126,7 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
         """
         # Check that a file_hanlder was received
         if file_handler == None or type(file_handler)!=File_Handler:
-            print "Failed to save the Parametter_Tree since no File_Handler was passed to the save() method"
+            print("Failed to save the Parametter_Tree since no File_Handler was passed to the save() method")
 
         # Generate a file_handler from the tree
         fh = self.genFileHandler()
@@ -163,7 +163,7 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
         """
         # Check that a file_hanlder was received
         if file_handler == None:
-            print "Failed to load the Parametter_Tree since no File_Handler was passed to the load() method"
+            print("Failed to load the Parametter_Tree since no File_Handler was passed to the load() method")
             return
 
         file_handler.beginGroup('::Hiar_Param_Tree')

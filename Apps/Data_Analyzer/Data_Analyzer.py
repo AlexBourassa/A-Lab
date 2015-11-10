@@ -165,6 +165,6 @@ if __name__ == "__main__":
     # where <...> under windows is probably C:\Users\<username>
     (current_module, current_ns) = extract_module_locals(depth=0)
     IPython.start_kernel(user_ns = current_ns, 
-                         exec_lines= [u'', u'splash.finish(win)'], 
+                         exec_lines= ['', 'splash.finish(win)'], 
                          gui='qt', 
                          connection_file = kernel_name)

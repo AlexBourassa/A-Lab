@@ -105,7 +105,7 @@ class egg_TreeDictionary(_pg.parametertree.ParameterTree):
 
         # if it pooped and we're not supposed to create it, quit
         if len(result) == 0 and not create_missing:
-            if not quiet: print("ERROR: Could not find '"+r+"'")
+            if not quiet: print(("ERROR: Could not find '"+r+"'"))
             return None
 
         # otherwise use the first value
@@ -125,7 +125,7 @@ class egg_TreeDictionary(_pg.parametertree.ParameterTree):
 
             # only allow the parameter search if x is a branch
             if not x.isType('group'):
-                if not quiet: print("ERROR: '"+x.name()+"' is not a branch and can't be searched.")
+                if not quiet: print(("ERROR: '"+x.name()+"' is not a branch and can't be searched."))
                 return None
 
             # try to search for the name
@@ -139,7 +139,7 @@ class egg_TreeDictionary(_pg.parametertree.ParameterTree):
 
                 # otherwise poop out
                 else:
-                    if not quiet: print("ERROR: Could not find '"+n+"' in '"+x.name()+"'")
+                    if not quiet: print(("ERROR: Could not find '"+n+"' in '"+x.name()+"'"))
                     return None
 
         # return the last one we found / created.
@@ -161,7 +161,7 @@ class egg_TreeDictionary(_pg.parametertree.ParameterTree):
 
         # make sure it doesn't already exist
         if not self._find_parameter(s, quiet=True) == None:
-            print("Error: '"+name+"' already exists.")
+            print(("Error: '"+name+"' already exists."))
             return None
 
         # get the leaf name off the list.
@@ -225,7 +225,7 @@ class egg_TreeDictionary(_pg.parametertree.ParameterTree):
 
         # make sure it doesn't already exist
         if not self._find_parameter(s, quiet=True) == None:
-            print("Error: '"+name+"' already exists.")
+            print(("Error: '"+name+"' already exists."))
             return self
 
         # get the leaf name off the list.
@@ -326,8 +326,8 @@ class egg_TreeDictionary(_pg.parametertree.ParameterTree):
 
         # for lists, make sure the value exists!!
         if x.type() in ['list']:
-            if value in x.forward.keys(): x.setValue(value)
-            else:                         x.setValue(x.forward.keys()[0])
+            if value in list(x.forward.keys()): x.setValue(value)
+            else:                         x.setValue(list(x.forward.keys())[0])
 
         # otherwise just set the value
         else: x.setValue(value)
@@ -394,7 +394,7 @@ class egg_TreeDictionary(_pg.parametertree.ParameterTree):
         if not type(d) == dict: d = d.headers
 
         # loop over the dictionary and update
-        for k in d.keys():
+        for k in list(d.keys()):
 
             # for safety: by default assume it's a repr() with python code
             try:    self.set_value(k, eval(str(d[k])), ignore_error=ignore_errors)

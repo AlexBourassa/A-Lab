@@ -17,7 +17,7 @@ class QIPythonWidget(RichIPythonWidget):
         #self.app = self.KernelApp.instance(argv=instance_args)
         #self.app.initialize()
         self.set_default_style(colors=colors)
-        self.connect_kernel(u'kernel-example.json')
+        self.connect_kernel('kernel-example.json')
 
     def connect_kernel(self, conn, heartbeat=False):
         km = QtKernelManager(connection_file=find_connection_file(conn))

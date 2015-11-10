@@ -55,7 +55,7 @@ class GraphTrace(_core.QObject):
         """
         Returns the current trace data, 
         """
-        if transformed and not (self.xData==None or self.yData==None):
+        if transformed and not (self.xData is None or self.yData is None):
             x,y = self.transform(self.xData, self.yData)
         else:
             x,y = self.xData, self.yData

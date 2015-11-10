@@ -74,7 +74,7 @@ class TraceManagerWidget(_gui.QWidget):
         self.items[graph_name] = GraphTreeWidgetItem(self, graph_name)
         
     def __iter__(self):
-        k = self.items.keys()
+        k = list(self.items.keys())
         return iter(k)
         
     def __len__(self):
@@ -107,7 +107,7 @@ class GraphTreeWidgetItem(_gui.QTreeWidgetItem):
         """
         removeList = self.getTreeItemNameList()
         #Add the missing items
-        for trc in self.graph.traces.keys():
+        for trc in list(self.graph.traces.keys()):
             if not trc in self.trace_items:
                 self.addTraceItem(trc)
             elif trc in removeList:
@@ -152,7 +152,7 @@ class GraphTreeWidgetItem(_gui.QTreeWidgetItem):
         return ans
             
     def __iter__(self):
-        k = self.trace_items.keys()
+        k = list(self.trace_items.keys())
         return iter(k)
         
     def __len__(self):

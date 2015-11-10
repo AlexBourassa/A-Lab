@@ -8,7 +8,7 @@ Supported file formats are:
 
 @author: Alex
 """
-from File_Handler import File_Handler
+from A_Lab.Others.File_Handler import File_Handler
 import pickle as _p
 import json as _json
 import numpy as _np
@@ -180,10 +180,10 @@ class JSON_Handler(File_Handler):
         This ensure that unicode str are converted to Python str type
         """
         if isinstance(input, dict):
-            return {self._byteify(key):self._byteify(value) for key,value in input.iteritems()}
+            return {self._byteify(key):self._byteify(value) for key,value in list(input.items())}
         elif isinstance(input, list):
             return [self._byteify(element) for element in input]
-        elif isinstance(input, unicode):
+        elif isinstance(input, str):
             return input.encode('utf-8')
         else:
             return input

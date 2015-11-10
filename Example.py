@@ -22,12 +22,15 @@
 import os as _os
 _os.environ['QT_API'] = 'pyqt'
 
+import sys as _sys
+
 # This line is just temporary, in practice I will put this in th site-package
 # it should be necessary
 _os.path.join(_os.getcwd())
 
 #@Bug: I have to load this one first or else PyQt defaults to V1
-from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+#from qtconsole.rich_ipython_widget import RichIPythonWidget
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
@@ -46,13 +49,13 @@ class example(Module_Container.Module_Container):
         #Create some widgets and objects
         w1 = _graph.PyQtGraphWidget(parent = self)
         w2 = _graph.PyQtGraphWidget(parent = self)
-        w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12)
+        #w3 = _ipy.Easy_RichIPythonWidget(connection_file = 'kernel-example.json', font_size=12)
         w4 = TraceManagerWidget()
         w5 = Hiar_Param_Tree(file_handler = None)
         w6 = _2d_graph.PyQtImageWidget(parent = self)
         
         #Add the modules to the container
-        for wi in [w1,w2,w3,w4,w5,w6]:
+        for wi in [w1,w2,w4,w5,w6]:
             self.addModule('mod', wi, initial_pos = _core.Qt.TopDockWidgetArea)
         
         #Decide which graph the trace manager deals with (here both graphs)        
@@ -116,19 +119,19 @@ if __name__ == "__main__":
     app.processEvents()
 
     # Do all other imports here (so the splash screen shows that something is happening)
-    import IPython
+    #import IPython
     from IPython.utils.frame import extract_module_locals
     import numpy as _np
-    import Widgets.GraphWidget.GraphWidget as _graph
-    import Widgets.IPythonConsoleWidget as _ipy
+    from Widgets.GraphWidget import GraphWidget as _graph
+    #from Widgets import IPythonConsoleWidget as _ipy
     from Widgets.TraceManagerWidget import TraceManagerWidget
     from Devices.Test_Device import *
     from Widgets.Hiar_Param_Tree import Hiar_Param_Tree
-    from A_Lab.Others.File_Handler import File_Handler
-    from A_Lab.Extras.PhoneSensors.SensorTCP import SensorTCP
-    import Widgets.Graph2D.Graph2D as _2d_graph
+    from Others.File_Handler import File_Handler
+    from Extras.PhoneSensors.SensorTCP import SensorTCP
+    from Widgets.Graph2D import Graph2D as _2d_graph
     
-    
+    from A_Lab.Widgets.ConsoleWidget import ConsoleWidget
     #Gives me some time to look at the beautiful splash screen
 #    import time as _t
 #    _t.sleep(3)    
@@ -150,12 +153,23 @@ if __name__ == "__main__":
 #------------------------------------------------------------------------------
     #Create the object
     win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid) #This should eventually go in exec_lines, but having it here makes debugging easier...
-
+    
+    (current_module, current_ns) = extract_module_locals(depth=0)
+    consoleW = ConsoleWidget()
+    # consoleW = RichJupyterWidget(user_ns = current_ns, 
+    #                              exec_lines= [],#['win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid)',
+    #                                   #'splash.finish(win)'], 
+    #                              gui='qt') 
+    #                              #connection_file='kernel-8588.json')
+    consoleW.push(current_ns)
+    win.addModule("Console", consoleW, initial_pos=_core.Qt.TopDockWidgetArea)
+    splash.finish(win)
+    
     # Here you can add shortcuts for the command line (for example, let's say
     # we use the Test_Device trace from module mod2 a lot)
     #trace = win['mod2']['Test_Device']
 #------------------------------------------------------------------------------
-
+    
     # Runs a new IPython kernel, that begins the qt event loop.
     #
     # Other options for the ipython kernel can be found at:
@@ -163,12 +177,13 @@ if __name__ == "__main__":
     #
     # To connect to the kernel use the info in <...>\.ipython\profile_default\security\kernel-example.json
     # where <...> under windows is probably C:\Users\<username>
-    (current_module, current_ns) = extract_module_locals(depth=0)
-    IPython.start_kernel(user_ns = current_ns, 
-                         exec_lines= [u'', u'splash.finish(win)'], 
-                         gui='qt', 
-                         connection_file='kernel-example.json')
+    # (current_module, current_ns) = extract_module_locals(depth=0)
+    # IPython.embed_kernel(user_ns = current_ns, 
+    #                      exec_lines= [],#['win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid)',
+    #                                   #'splash.finish(win)'], 
+    #                      gui='qt', 
+    #                      connection_file='kernel-example.json')
 
-
+    _sys.exit(app.exec_())
         
             

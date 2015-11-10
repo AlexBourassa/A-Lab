@@ -5,7 +5,7 @@ succesivelly calling their save/load functions.
 
 @author: AlexBourassa
 """
-from Module_Container_Plugin import Module_Container_Plugin
+from A_Lab.Module_Container_Plugins.Module_Container_Plugin import *
 from PyQt4 import QtGui as _gui
 from A_Lab.Others.Standard_File_Handlers import getFileFormatDict
 from A_Lab.Others.File_Handler import File_Handler
@@ -48,7 +48,7 @@ class Load_Save(Module_Container_Plugin):
                                          directory = self.container.default_folder,
                                          filter = allowed_formats)
         if filename == None:#TODO: Check if this is indead what's returns when no file is selected
-            print "Cancelling save..."
+            print("Cancelling save...")
             return
         
         # Get the appropriate File_Handler
@@ -56,16 +56,16 @@ class Load_Save(Module_Container_Plugin):
         handler = format_dict[ext](default_filename = filename)
 
         # Set the list of modules
-        if modules is None: modules = self.container.modules.keys()
+        if modules is None: modules = list(self.container.modules.keys())
 
         for mod_name in modules:
             if not mod_name in self.container.modules:
-                print "No modules named " + mod_name
+                print(("No modules named " + mod_name))
             elif hasattr(self.container.modules[mod_name], 'save'): 
                 handler.beginGroup(mod_name)
                 self.container.modules[mod_name].save(file_handler = handler)
                 handler.endGroup()
-            else: print "Failed to save data for " + mod_name
+            else: print(("Failed to save data for " + mod_name))
                 
         handler.save()
 
@@ -81,7 +81,7 @@ class Load_Save(Module_Container_Plugin):
                                          filter = allowed_formats)
                                          #selectedFilter = 0)
         if filenames == None:#TODO: Check if this is indead what's returns when no file is selected
-            print "Cancelling loads..."
+            print("Cancelling loads...")
             return
         
         # Fill the file handler with the data in all files
@@ -104,12 +104,12 @@ class Load_Save(Module_Container_Plugin):
         handler = self._loadToHandler()
 
         # Set the list of modules
-        if modules is None: modules = self.container.modules.keys()
+        if modules is None: modules = list(self.container.modules.keys())
         
         # Issue the load command
         for mod_name in modules:
             if not mod_name in self.container.modules:
-                print "No modules named " + mod_name
+                print(("No modules named " + mod_name))
             elif hasattr(self.container.modules[mod_name], 'load'):
                 handler.beginGroup(mod_name)
                 #try:
@@ -117,7 +117,7 @@ class Load_Save(Module_Container_Plugin):
                 #except:
                 #    print "Failed to load data from " + mod_name
                 handler.endGroup()
-            else: print "No load function is defined for " + mod_name
+            else: print(("No load function is defined for " + mod_name))
 
     def loadKey2Mod(self, key, mod_name, handler = None, present_in_both = True):
         """

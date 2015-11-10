@@ -34,8 +34,8 @@ class Hiar_Storage(_core.QObject):
         path with their item values (either a group or a value)
         """
         flatten_dict = self.flatten()
-        path_array = _np.array(flatten_dict.keys())
-        possible_index = _np.array(map(lambda path: key in path, path_array))
+        path_array = _np.array(list(flatten_dict.keys()))
+        possible_index = _np.array([key in path for path in path_array])
         ans = dict()
         for possible_path in path_array[possible_index]:
             #If it is the full name of a group it is between 2 '/'

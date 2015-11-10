@@ -5,7 +5,7 @@
 @TODO: Doesn't delete entry when moduleRemoved triggers
 """
 
-from Module_Container_Plugin import Module_Container_Plugin
+from A_Lab.Module_Container_Plugins.Module_Container_Plugin import *
 from PyQt4 import QtGui as _gui
 
 
@@ -50,7 +50,7 @@ class View_Menu(Module_Container_Plugin):
                          
         #Remove actions
         for m in self:
-            if not m in self.container.modules.keys():
+            if not m in list(self.container.modules.keys()):
                 self['_QMenu'].removeAction(self[m])
                 del self.menu['View'][m]
 
@@ -72,7 +72,7 @@ class View_Menu(Module_Container_Plugin):
     
     #By default these ignore the _QMenu entry (except for __getitem__)
     def __iter__(self):
-        k = self.menu['View'].keys()
+        k = list(self.menu['View'].keys())
         k.remove('_QMenu')
         k.remove('Show All')
         k.remove('Hide All')

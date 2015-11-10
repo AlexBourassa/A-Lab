@@ -15,12 +15,12 @@ I made some quick modification to make it work, but that migth have broken some 
 import sys, os, atexit
 
 
-from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
-from IPython.qt.inprocess import QtInProcessKernelManager
+from qtconsole.rich_ipython_widget import RichIPythonWidget
+from qtconsole.inprocess import QtInProcessKernelManager
 from IPython.lib.kernel import find_connection_file
 from PyQt4 import QtGui as _gui
 
-from IPython.qt.manager import QtKernelManager
+from qtconsole.manager import QtKernelManager
 
 try: # IPython = "<=2.0"
     from IPython.external.ssh import tunnel as zmqtunnel
@@ -169,7 +169,7 @@ class Easy_RichIPythonWidget(RichIPythonWidget):
                 (kernel_client.shell_port, kernel_client.iopub_port,
                  kernel_client.stdin_port, kernel_client.hb_port) = newports
             except Exception as e:
-                print "Could not open ssh tunnel. The error was:\n\n" + e.message
+                print(("Could not open ssh tunnel. The error was:\n\n" + e.message))
                 return None, None
         kernel_client.start_channels()
         # To rely on kernel's heartbeat to know when a kernel has died

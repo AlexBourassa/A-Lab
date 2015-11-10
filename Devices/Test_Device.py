@@ -37,7 +37,7 @@ class Test_Device(_core.QObject):
             t = self.last_time
             self.last_time = _t.time()
             if 1.1*self.period<(t - self.last_time):
-                print "Test_Device timer was more then 10% late (" + str(t-self.last_time) + ")"
+                print(("Test_Device timer was more then 10% late (" + str(t-self.last_time) + ")"))
                 self.timer.stop()
         x = self.x
         y = (_np.random.rand(100)-0.5)*2*self.amplitude + self.center
@@ -91,7 +91,7 @@ class Raster_Test_Device(_core.QObject):
             t = self.last_time
             self.last_time = _t.time()
             if 1.1*self.period<(t - self.last_time):
-                print "Raster_Test_Device timer was more then 10% late (" + str(t-self.last_time) + ")"
+                print(("Raster_Test_Device timer was more then 10% late (" + str(t-self.last_time) + ")"))
                 self.timer.stop()
         data = _np.random.rand(self.packet_size)
         self.imv.addRasterData(data)

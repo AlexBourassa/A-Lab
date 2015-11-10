@@ -47,14 +47,14 @@ class Generic_Fct():
         """
         Overide this method to return the parameters specific to a fct
         """
-        print "You need to Overwrite this in the specific function class"
+        print("You need to Overwrite this in the specific function class")
         return None
         
     def applyEq(self, p, x):
         """
         Overide this method to return the parameters specific to a fct
         """
-        print "You need to Overwrite this in the specific function class"
+        print("You need to Overwrite this in the specific function class")
         return None
         
     def getLatex(self):
@@ -100,7 +100,7 @@ class Generic_Fct():
         
         #Checks that repeat is a valid int
         if type(repeat)!=int or repeat<1:
-            print "'repeat' must be an int greater or equal to 1"
+            print("'repeat' must be an int greater or equal to 1")
             return None
             
         #Check that the parameters are all there and create an ordered ndarray
@@ -108,11 +108,11 @@ class Generic_Fct():
         pArray = []
         for param in pList:
             #Check that the parameters is present
-            if not p.has_key(param) and not const.has_key(param):
-                print "Missing parameter: "+param
+            if param not in p and param not in const:
+                print(("Missing parameter: "+param))
                 return None
             #If it is a parameter to guess add it to the array
-            elif p.has_key(param):
+            elif param in p:
                 pArray.append(p[param])
                 
         p = _np.array(pArray)
@@ -149,7 +149,7 @@ class Generic_Fct():
         tempP = []
         nextP = 0
         for i in range(len(pList)):
-            if pList[i] in const.keys():
+            if pList[i] in list(const.keys()):
                 tempP.append(const[pList[i]])
             else:
                 tempP.append(p[nextP])
@@ -258,7 +258,7 @@ class Laurentzian(Generic_Fct):
         """
         #Check that x and y are of same dimensions
         if x.shape != y.shape:
-            print "X and Y arrays need to be of equal shape..."
+            print("X and Y arrays need to be of equal shape...")
             return None
         
         #Guess x0 and y0 very simply
@@ -355,10 +355,10 @@ class Gaussian(Generic_Fct):
         sigma = _np.abs((x[i]-x0))
         
         #Guess the power
-        print max_y
-        print sigma
+        print(max_y)
+        print(sigma)
         P = (max_y-y0)*sigma*_np.sqrt(2*_np.pi)
-        print P
+        print(P)
         
         return {'x0':x0, 'P':P, 'sigma':sigma, 'y0':y0}
         
@@ -423,7 +423,7 @@ class LaurentzianWithConstInterference(Generic_Fct):
         """
         #Check that x and y are of same dimensions
         if x.shape != y.shape:
-            print "X and Y arrays need to be of equal shape..."
+            print("X and Y arrays need to be of equal shape...")
             return None
         
         #Guess x0 and y0 very simply
@@ -590,7 +590,7 @@ class Resonance(Generic_Fct):
     def guessP(self, x, y):
         #Check that x and y are of same dimensions
         if x.shape != y.shape:
-            print "X and Y arrays need to be of equal shape..."
+            print("X and Y arrays need to be of equal shape...")
             return None
         #Guess x0 and y0 very simply
         x0 = x[_np.argmax(y)]
