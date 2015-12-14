@@ -4,7 +4,7 @@
 
 @TODO: Better method for custom functions
 """
-from Graph_Widget_Plugin import Graph_Widget_Plugin
+from A_Lab.Widgets.GraphWidget.Graph_Widget_Plugin import Graph_Widget_Plugin
 from PyQt4 import QtGui as _gui
 import numpy as _np
 
@@ -80,14 +80,14 @@ class Transform_Menu(Graph_Widget_Plugin):
         If <fct> is not a predefined function, create/modified a new entry to
         add it in.
         """
-        allFcts = self[trc].keys()
+        allFcts = list(self[trc].keys())
         allFcts.remove('_QMenu')
         for f in allFcts:
             self[trc][f].setChecked(False)
             
         #If the function isn't in the submenu create a new one
         if createIfNew and not fct in getPredefinedTransfFct():
-            print str(fct) + " is being added to submenu..."#Debug
+            print((str(fct) + " is being added to submenu..."))#Debug
             
             #Remove from the list if it already exists
             if fct in self[trc]:
@@ -109,7 +109,7 @@ class Transform_Menu(Graph_Widget_Plugin):
         
     #By default these ignore the _QMenu entry (except for __getitem__)
     def __iter__(self):
-        k = self.menu['Transform'].keys()
+        k = list(self.menu['Transform'].keys())
         k.remove('_QMenu')
         return iter(k)
         

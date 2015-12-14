@@ -22,12 +22,14 @@
 import os as _os
 _os.environ['QT_API'] = 'pyqt'
 
+import sys as _sys
+
 # This line is just temporary, in practice I will put this in th site-package
 # it should be necessary
 _os.path.join(_os.getcwd())
 
-#@Bug: I have to load this one first or else PyQt defaults to V1
-from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+#@Bug: I have to load this one first or else PyQt defaults to V1...
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
@@ -46,7 +48,7 @@ class example(Module_Container.Module_Container):
         #Create some widgets and objects
         w1 = _graph.PyQtGraphWidget(parent = self)
         w2 = _graph.PyQtGraphWidget(parent = self)
-        w3 = _ipy.Easy_RichIPythonWidget(connection_file = u'kernel-example.json', font_size=12)
+        w3 = ConsoleWidget()
         w4 = TraceManagerWidget()
         w5 = Hiar_Param_Tree(file_handler = None)
         w6 = _2d_graph.PyQtImageWidget(parent = self)
@@ -74,7 +76,21 @@ class example(Module_Container.Module_Container):
         w5.addParam('g1/v2', 10000000, siPrefix = True, suffix = 'Hz') 
         w5.addParam('g1/g1.1/g1_1', 'b', values = ['a','b','c'], type = 'list') 
 
-        # Exeperimenting with Phone sensors
+
+        #Create a lantz example fungen
+        fungen = LantzSignalGenerator('TCPIP::localhost::5678::SOCKET')
+        fungen.initialize()
+        generateLantzParams(w5, fungen)
+        self.fungen = fungen
+        # try:
+        #     fungen = LantzSignalGenerator('TCPIP::localhost::5678::SOCKET')
+        #     fungen.initialize()
+        #     generateLantzParams(w5, fungen)
+        #     self.fungen = fungen
+        # except:
+        #     print("Could not could to a Simulated Lantz Signal Generator, perhaps you didn't launch the 'lantz-sim fungen tcp' process")
+
+        #Experimenting with Phone sensors
 #        phone = SensorTCP()
 #        phone.signal_newFeeder.connect(lambda name, feeder: w2.addTrace(name, feeder = feeder))
 #        self.phone = phone
@@ -116,19 +132,29 @@ if __name__ == "__main__":
     app.processEvents()
 
     # Do all other imports here (so the splash screen shows that something is happening)
-    import IPython
+    #import IPython
     from IPython.utils.frame import extract_module_locals
     import numpy as _np
-    import Widgets.GraphWidget.GraphWidget as _graph
-    import Widgets.IPythonConsoleWidget as _ipy
+    from Widgets.GraphWidget import GraphWidget as _graph
     from Widgets.TraceManagerWidget import TraceManagerWidget
     from Devices.Test_Device import *
     from Widgets.Hiar_Param_Tree import Hiar_Param_Tree
-    from A_Lab.Others.File_Handler import File_Handler
-    from A_Lab.Extras.PhoneSensors.SensorTCP import SensorTCP
-    import Widgets.Graph2D.Graph2D as _2d_graph
-    
-    
+    from Others.File_Handler import File_Handler
+    from Widgets.Graph2D import Graph2D as _2d_graph
+    from A_Lab.Widgets.ConsoleWidget import ConsoleWidget
+
+    #@py27 These don't exist in Python 2.7 so you won't be able to use them
+    from lantz.drivers.examples import LantzSignalGenerator
+    from A_Lab.Others.LantzAddOns import generateLantzParams
+
+
+    # try:
+    #     from lantz.drivers.examples import LantzSignalGenerator
+    #     from A_Lab.Others.LantzAddOns import generateLantzParams
+    # except:
+    #     print("Lantz is a not installed on this Python distribution")
+
+
     #Gives me some time to look at the beautiful splash screen
 #    import time as _t
 #    _t.sleep(3)    
@@ -149,26 +175,21 @@ if __name__ == "__main__":
     # is started and it will thus try to connect with a non-existent connection file
 #------------------------------------------------------------------------------
     #Create the object
-    win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid) #This should eventually go in exec_lines, but having it here makes debugging easier...
+    win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid)
 
     # Here you can add shortcuts for the command line (for example, let's say
     # we use the Test_Device trace from module mod2 a lot)
-    #trace = win['mod2']['Test_Device']
+    trace = win['mod2']['Test_Device']
 #------------------------------------------------------------------------------
 
-    # Runs a new IPython kernel, that begins the qt event loop.
-    #
-    # Other options for the ipython kernel can be found at:
-    # https://ipython.org/ipython-doc/dev/config/options/kernel.html
-    #
-    # To connect to the kernel use the info in <...>\.ipython\profile_default\security\kernel-example.json
-    # where <...> under windows is probably C:\Users\<username>
+    # Create a console widget, add it to the window and push the current
+    # current namespace to it
     (current_module, current_ns) = extract_module_locals(depth=0)
-    IPython.start_kernel(user_ns = current_ns, 
-                         exec_lines= [u'', u'splash.finish(win)'], 
-                         gui='qt', 
-                         connection_file='kernel-example.json')
+    win['mod3'].push(current_ns)
 
+    # Kill the splash screen to indicate everything is done loading
+    splash.finish(win)
 
+    # Begin the UI event loop
+    _sys.exit(app.exec_())
         
-            

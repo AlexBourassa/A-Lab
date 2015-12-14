@@ -23,7 +23,7 @@ the shared resources and react appropriattly when these resources change.
 """
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
-from Docked_Module import Docked_Module
+from A_Lab.Docked_Module import *
 
 import os as _os
 
@@ -79,8 +79,8 @@ class Module_Container(_gui.QMainWindow):
         self.show()
         
     def addStandardPlugins(self):
-        from Module_Container_Plugins.View_Menu import View_Menu
-        from Module_Container_Plugins.Load_Save import Load_Save
+        from A_Lab.Module_Container_Plugins.View_Menu import View_Menu
+        from A_Lab.Module_Container_Plugins.Load_Save import Load_Save
         self.plugins['View_Menu'] = View_Menu(self)
         self.plugins['Load_Save'] = Load_Save(self)
         
@@ -103,7 +103,7 @@ class Module_Container(_gui.QMainWindow):
         self.menu['File']['Close'].triggered.connect(lambda: self.close())
                 
     def removeModule(self, name):
-        print "Removing " + name
+        print(("Removing " + name))
         mod = self.modules.pop(name)
         d = self._docked_widgets.pop(name)
         del mod
@@ -163,7 +163,7 @@ class Module_Container(_gui.QMainWindow):
         if self.params['autoSave']: self.saveUI()
             
         #Close all modules
-        for m in self.modules.values():
+        for m in list(self.modules.values()):
             m.close()
 
         #Pass on the close event
@@ -191,7 +191,7 @@ class Module_Container(_gui.QMainWindow):
             if hasattr(self.modules[mod_name], 'saveSettings'): 
                 settings.beginGroup(mod_name)
                 try: self.modules[mod_name].saveSettings(settingsObj = settings)
-                except: print "Failed to save settings for " + mod_name
+                except: print(("Failed to save settings for " + mod_name))
                 settings.endGroup()
                 
                 
@@ -202,7 +202,7 @@ class Module_Container(_gui.QMainWindow):
             if hasattr(self.plugins[plug_name], 'saveSettings'): 
                 settings.beginGroup('Plugins')
                 try: self.plugins[plug_name].saveSettings(settingsObj = settings)
-                except: print "Failed to save settings for " + plug_name
+                except: print(("Failed to save settings for " + plug_name))
                 settings.endGroup()
         
         settings.endGroup()
@@ -224,7 +224,7 @@ class Module_Container(_gui.QMainWindow):
             if hasattr(self.modules[mod_name], 'loadSettings'): 
                 settings.beginGroup(mod_name)
                 try: self.modules[mod_name].loadSettings(settingsObj = settings)
-                except: print "Failed to load settings for " + mod_name
+                except: print(("Failed to load settings for " + mod_name))
                 settings.endGroup()
         settings.endGroup()
                 
@@ -235,7 +235,7 @@ class Module_Container(_gui.QMainWindow):
             if hasattr(self.plugins[plug_name], 'loadSettings'):
                 settings.beginGroup(plug_name)
                 try: self.plugins[plug_name].loadSettings(settingsObj = settings)
-                except: print "Failed to load settings for " + plug_name
+                except: print(("Failed to load settings for " + plug_name))
                 settings.endGroup()
         settings.endGroup()
         
@@ -280,9 +280,9 @@ def launchApp(launch_script_main):
     from IPython.utils.frame import extract_module_locals
     
     func_src = _inspect.getsourcelines(launch_script_main)[0]
-    print _inspect.getmodule(launch_script_main)
+    print((_inspect.getmodule(launch_script_main)))
     
-    func_src.append(u'splash.finish()')
+    func_src.append('splash.finish()')
     
     # Runs a new IPython kernel, that begins the qt event loop.
     #

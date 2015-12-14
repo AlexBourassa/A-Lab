@@ -8,7 +8,7 @@ Supported file formats are:
 
 @author: Alex
 """
-from File_Handler import File_Handler
+from A_Lab.Others.File_Handler import File_Handler
 import pickle as _p
 import json as _json
 import numpy as _np
@@ -16,7 +16,7 @@ from A_Lab.Others.Hiar_Storage import *
 
 
 def getFileFormatDict():
-    return {'*.pck': Pickle_Handler, '*.json':JSON_Handler}
+    return {'*.json':JSON_Handler} # '*.pck': Pickle_Handler
 
 
 class Pickle_Handler(File_Handler):
@@ -106,7 +106,7 @@ class JSON_Handler(File_Handler):
         with open(filename, 'w') as f:
             _json.dump([temp_fh.data.content, temp_fh.headers.content], f)
 
-    def load(self, filename = None, **kw):
+    def load(self, filename = None, py27=False, **kw):
         """
         Loads the File_Handler Hiar_Storage structures from file <filename>.
         If <filename> is not specified uses the default Handlers filename.
@@ -120,7 +120,12 @@ class JSON_Handler(File_Handler):
         if filename == None: raise Exception("No filename specified")
         with open(filename, 'r') as f:
             ans = _json.load(f)
-        ans = self._byteify(ans)
+
+        # @py27 This is no longer usefull in Python 3, but should be used in Python 2
+        if py27:
+            ans = self._byteify(ans)
+
+
         # Make sure to call this one at the end of any load functions for
         # sub-class of File_Handler.  This will add some common functions like
         # loadMerge.
@@ -178,13 +183,19 @@ class JSON_Handler(File_Handler):
         This functions should be called on the results of _json.load().
 
         This ensure that unicode str are converted to Python str type
+
+        This was used in the Python 2.7 version of this code, but in Python 3,
+        string handling has changed making this irrelevant (ie this is 
+        )
         """
         if isinstance(input, dict):
-            return {self._byteify(key):self._byteify(value) for key,value in input.iteritems()}
+            return {self._byteify(key):self._byteify(value) for key,value in list(input.items())}
         elif isinstance(input, list):
             return [self._byteify(element) for element in input]
-        elif isinstance(input, unicode):
+        elif isinstance(input, str):
             return input.encode('utf-8')
+        elif isinstance(input, bytes):
+            return input.decode('utf-8')
         else:
             return input
 

@@ -142,15 +142,15 @@ class File_Handler():
         headers_path = self.headers.findAll(key)
 
         # If we don't need it present in both
-        paths = data_path.keys()
-        paths2 = headers_path.keys()
+        paths = list(data_path.keys())
+        paths2 = list(headers_path.keys())
         if not present_in_both:
             paths = paths + list(set(paths2) - set(paths))
             return paths
 
         # Eliminate the entry that don't appear in both
         for path in paths:
-            if not path in headers_path.keys():
+            if not path in list(headers_path.keys()):
                 paths.pop(path)
 
         return paths

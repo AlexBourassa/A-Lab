@@ -10,12 +10,8 @@ It currently only supports the Standard_File_Handlers formats (that is data whic
 import os as _os
 _os.environ['QT_API'] = 'pyqt'
 
-# This line is just temporary, in practice I will put this in th site-package
-# it should be necessary
-_os.path.join(_os.getcwd())
-
 #@Bug: I have to load this one first or else PyQt defaults to V1
-from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
 
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
@@ -40,7 +36,7 @@ class Data_Analyzer(Module_Container.Module_Container):
         # Create some widgets and objects
         self.main_plot      = _graph.PyQtGraphWidget(parent = self)
         self.tree           = Hiar_Param_Tree(file_handler = None)
-        self.console        = _ipy.Easy_RichIPythonWidget(connection_file = kernel_name, font_size=12)
+        self.console        = ConsoleWidget(font_size=12)
         self.trc_manager    = TraceManagerWidget()
 
         # Add the widgets to the container
@@ -124,11 +120,10 @@ if __name__ == "__main__":
     app.processEvents()
 
     # Do all other imports here (so the splash screen shows that something is happening)
-    import IPython
     from IPython.utils.frame import extract_module_locals
     import numpy as _np
     import A_Lab.Widgets.GraphWidget.GraphWidget as _graph
-    import A_Lab.Widgets.IPythonConsoleWidget as _ipy
+    from A_Lab.Widgets.ConsoleWidget import ConsoleWidget
     from A_Lab.Widgets.TraceManagerWidget import TraceManagerWidget
     from A_Lab.Devices.Test_Device import *
     from A_Lab.Widgets.Hiar_Param_Tree import Hiar_Param_Tree
@@ -136,35 +131,28 @@ if __name__ == "__main__":
     import A_Lab.Widgets.Graph2D.Graph2D as _2d_graph
     from A_Lab.Module_Container_Plugins.View_Menu import View_Menu
     from A_Lab.Module_Container_Plugins.Load_Save import Load_Save
+    import sys as _sys
     
 
     # Get the current process to be able to kill the kernel from inside the client
     kernel_pid = _os.getpid()
 
-    
-    # We can't actually put the code here now, because if the kernel opens up on
-    # a new tcp address the connection won't work properly...  This is the awkward
-    # part...
-    # This is due to the fact that the console is initialized as soon as the windows
-    # is started and it will thus try to connect with a non-existent connection file
 #------------------------------------------------------------------------------
     #Create the object
-    win = Data_Analyzer(autoSave=False, standardPlugins=False, kill_kernel_pid=kernel_pid, default_folder = 'C:\\Python27\\Lib\\site-packages\\A_Lab\\Apps\\Data_Analyzer') #This should eventually go in exec_lines, but having it here makes debugging easier...
+    win = Data_Analyzer(autoSave=False, standardPlugins=False, kill_kernel_pid=kernel_pid, default_folder = 'C:\\Python27\\Lib\\site-packages\\A_Lab\\Apps\\Data_Analyzer') 
 
     # Here you can add shortcuts for the command line (for example, let's say
     # we use the Test_Device trace from module mod2 a lot)
     #trace = win['mod2']['Test_Device']
 #------------------------------------------------------------------------------
 
-    # Runs a new IPython kernel, that begins the qt event loop.
-    #
-    # Other options for the ipython kernel can be found at:
-    # https://ipython.org/ipython-doc/dev/config/options/kernel.html
-    #
-    # To connect to the kernel use the info in <...>\.ipython\profile_default\security\kernel-example.json
-    # where <...> under windows is probably C:\Users\<username>
+    # Create a console widget, add it to the window and push the current
+    # current namespace to it
     (current_module, current_ns) = extract_module_locals(depth=0)
-    IPython.start_kernel(user_ns = current_ns, 
-                         exec_lines= [u'', u'splash.finish(win)'], 
-                         gui='qt', 
-                         connection_file = kernel_name)
+    win.console.push(current_ns)
+
+    # Kill the splash screen to indicate everything is done loading
+    splash.finish(win)
+
+    # Begin the UI event loop
+    _sys.exit(app.exec_())

@@ -71,9 +71,9 @@ class Graph2D(_gui.QWidget):
             try:
                 init_data = _np.array(init_data)
             except:
-                print "Could not cast init_data to numpy array"
+                print("Could not cast init_data to numpy array")
             if init_data.shape != (row,col):
-                print "Invalid init_data shape... Initializing to zeros"
+                print("Invalid init_data shape... Initializing to zeros")
                 init_data = _np.zeros((row, col))
         self.data = init_data
 

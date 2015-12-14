@@ -5,7 +5,7 @@
 This is based on old code. It works, but may not be optimal or simple...
 """
 
-from Graph_Widget_Plugin import *
+from A_Lab.Widgets.GraphWidget.Graph_Widget_Plugin import *
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 from PyQt4 import uic as _uic
@@ -14,7 +14,7 @@ import numpy as _np
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as _plt
 
-import Fitter_Eq as fit
+from A_Lab.Widgets.GraphWidget import Fitter_Eq as fit
 
 
 
@@ -111,9 +111,9 @@ class Fitter_Control_Widget(_gui.QWidget):
         
         #Fill the combobox for fit function
         self.fitFct = fit.getAllFitFct()
-        self.fitFctSelect.addItems(self.fitFct.keys())
+        self.fitFctSelect.addItems(list(self.fitFct.keys()))
         self.fitFctSelect.currentIndexChanged.connect(self.generateFitTable)
-        self.fitFctSelect.setCurrentIndex(self.fitFct.keys().index('Gaussian'))
+        self.fitFctSelect.setCurrentIndex(list(self.fitFct.keys()).index('Gaussian'))
         
         #Begin/Stop continuous timer
         self.timer = _core.QTimer(self)
@@ -188,7 +188,7 @@ class Fitter_Control_Widget(_gui.QWidget):
         if p == None:
             #Read p
             p = dict()
-            for var in self.fitVarInputs.keys():
+            for var in list(self.fitVarInputs.keys()):
                     p[var] = self.fitVarInputs[var]['value'].value()
                     
         #Calculate output        
@@ -203,7 +203,7 @@ class Fitter_Control_Widget(_gui.QWidget):
         
         #Fill in the table
         ri = 0
-        for val in outputVal.keys():
+        for val in list(outputVal.keys()):
             #Set variable name in collumn 0
             self.outputTable.setCellWidget(ri,0,_gui.QLabel(str(val)))
             
@@ -230,7 +230,7 @@ class Fitter_Control_Widget(_gui.QWidget):
         #Grab the variables and constants
         fctVars = dict()
         fctConst = dict()
-        for var in self.fitVarInputs.keys():
+        for var in list(self.fitVarInputs.keys()):
             if self.fitVarInputs[var]['const'].isChecked():
                 fctConst[var] = self.fitVarInputs[var]['value'].value()
             else:
@@ -278,8 +278,8 @@ class Fitter_Control_Widget(_gui.QWidget):
         """
         Set all variables in the table to their associated dictionnary value
         """
-        for var in p.keys():
-            if self.fitVarInputs.has_key(var):
+        for var in list(p.keys()):
+            if var in self.fitVarInputs:
                 self.fitVarInputs[var]['value'].setValue(p[var])
                 
     def generateLatex(self):   
@@ -323,7 +323,7 @@ class Fitter_Control_Widget(_gui.QWidget):
             #Set the parametters
             self.setTableValue(p)
         else:
-            print "No Guessing algorithm defined for this function!"
+            print("No Guessing algorithm defined for this function!")
 
 
 #------------------------------------------------------------------------------
@@ -359,23 +359,23 @@ class Fitter_Control_Widget(_gui.QWidget):
         
         
     def loadSettings(self, settingsObj = None, **kwargs):
-        print 'Loading Fitter...'
+        print('Loading Fitter...')
         if type(settingsObj) != _core.QSettings:
-            print "No QSetting object was provided"
+            print("No QSetting object was provided")
         else:
             self.restoreGeometry(settingsObj.value('Geometry'))
-            print "hey"
+            print("hey")
             lastFunctionUsed = str(settingsObj.value('FunctionName'))
-            print lastFunctionUsed
-            self.fitFctSelect.setCurrentIndex(self.fitFct.keys().index(lastFunctionUsed))
+            print(lastFunctionUsed)
+            self.fitFctSelect.setCurrentIndex(list(self.fitFct.keys()).index(lastFunctionUsed))
             
                 
         return
         
     def saveSettings(self, settingsObj = None, **kwargs):
-        print 'Saving Fitter...'
+        print('Saving Fitter...')
         if type(settingsObj) != _core.QSettings:
-            print "No QSetting object was provided"
+            print("No QSetting object was provided")
         else:
             settingsObj.setValue('Geometry', self.saveGeometry())
             settingsObj.setValue('FunctionName', str(self.fitFctSelect.currentText()))
