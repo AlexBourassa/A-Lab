@@ -52,6 +52,7 @@ class example(Module_Container.Module_Container):
         w4 = TraceManagerWidget()
         w5 = Hiar_Param_Tree(file_handler = None)
         w6 = _2d_graph.PyQtImageWidget(parent = self)
+
         
         #Add the modules to the container
         for wi in [w1,w2,w3,w4,w5,w6]:
@@ -82,6 +83,16 @@ class example(Module_Container.Module_Container):
         fungen.initialize()
         generateLantzParams(w5, fungen)
         self.fungen = fungen
+
+        # from lantz.ui.widgets import FeatWidget, connect_feat, DictFeatWidget, connect_driver,DriverTestWidget
+        # target = self.fungen
+        # feat_name = 'dout'
+        # feat = target.feats[feat_name]
+        #w = DictFeatWidget(None, fungen, feat)
+        #w = DriverTestWidget(None, fungen)
+        #connect_driver(w, target)
+        #self.addModule('feat', w, initial_pos = _core.Qt.TopDockWidgetArea)
+
         # try:
         #     fungen = LantzSignalGenerator('TCPIP::localhost::5678::SOCKET')
         #     fungen.initialize()

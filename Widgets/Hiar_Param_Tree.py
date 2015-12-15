@@ -94,7 +94,7 @@ class Hiar_Param_Tree(_pTree.ParameterTree):
         h[path] = opts
         name = h.getHiarList(path)[-1]
         h[path]['name'] = name
-        h[path]['value'] = value
+        if not value == None: h[path]['value'] = value
 
         if not 'type' in opts:
             # Take a guess
