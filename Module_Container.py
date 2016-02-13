@@ -76,7 +76,11 @@ class Module_Container(_gui.QMainWindow):
         #Add Some Plugins
         if kwargs['standardPlugins']: self.addStandardPlugins()
         
-        self.show()
+        #Don't show if show not requested
+        if 'show' in kwargs and not kwargs['show']: 
+            pass
+        else:
+            self.show()
         
     def addStandardPlugins(self):
         from A_Lab.Module_Container_Plugins.View_Menu import View_Menu

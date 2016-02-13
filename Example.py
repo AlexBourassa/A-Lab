@@ -33,7 +33,7 @@ from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
-import Module_Container as Module_Container
+import A_Lab.Module_Container as Module_Container
 
 class example(Module_Container.Module_Container):
     """
@@ -146,12 +146,12 @@ if __name__ == "__main__":
     #import IPython
     from IPython.utils.frame import extract_module_locals
     import numpy as _np
-    from Widgets.GraphWidget import GraphWidget as _graph
-    from Widgets.TraceManagerWidget import TraceManagerWidget
-    from Devices.Test_Device import *
-    from Widgets.Hiar_Param_Tree import Hiar_Param_Tree
-    from Others.File_Handler import File_Handler
-    from Widgets.Graph2D import Graph2D as _2d_graph
+    from A_Lab.Widgets.GraphWidget import GraphWidget as _graph
+    from A_Lab.Widgets.TraceManagerWidget import TraceManagerWidget
+    from A_Lab.Devices.Test_Device import *
+    from A_Lab.Widgets.Hiar_Param_Tree import Hiar_Param_Tree
+    from A_Lab.Others.File_Handler import File_Handler
+    from A_Lab.Widgets.Graph2D import Graph2D as _2d_graph
     from A_Lab.Widgets.ConsoleWidget import ConsoleWidget
 
     #@py27 These don't exist in Python 2.7 so you won't be able to use them
