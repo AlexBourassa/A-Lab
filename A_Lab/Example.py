@@ -79,10 +79,10 @@ class example(Module_Container.Module_Container):
 
 
         #Create a lantz example fungen
-        fungen = LantzSignalGenerator('TCPIP::localhost::5678::SOCKET')
-        fungen.initialize()
-        generateLantzParams(w5, fungen)
-        self.fungen = fungen
+        # fungen = LantzSignalGenerator('TCPIP::localhost::5678::SOCKET')
+        # fungen.initialize()
+        # generateLantzParams(w5, fungen)
+        # self.fungen = fungen
 
         # from lantz.ui.widgets import FeatWidget, connect_feat, DictFeatWidget, connect_driver,DriverTestWidget
         # target = self.fungen
