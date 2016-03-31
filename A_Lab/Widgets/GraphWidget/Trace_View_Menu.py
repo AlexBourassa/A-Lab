@@ -26,7 +26,7 @@ class Trace_View_Menu(Graph_Widget_Plugin):
         self['Show All'].triggered.connect(lambda: self.showAll())
         self['Hide All'].triggered.connect(lambda: self.hideAll())
         
-        #Update if modules are added or removed
+        #Update if traces are added or removed
         self.graph.traceAdded.connect(lambda x: self.updateViewMenu())
         self.graph.traceRemoved.connect(lambda x: self.updateViewMenu())
         

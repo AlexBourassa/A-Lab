@@ -3,23 +3,23 @@
 @author: AlexBourassa
 
 This file contains the base class you should use as a main windows for your
-application.  To create a usefull application, you should then add pre-made
+application.  To create a useful application, you should then add pre-made
 Modules and Plugins and if necessary, add your own. (You will probably want 
 to add your own when working with specific devices)
 
 The Module Container is also meant to be extended via Plugins.  The plugin 
 structure relies on the Module Container class attributes, so you should be
-carefull in modifying this file.  In fact, most functionalities should be
+careful in modifying this file.  In fact, most functionalities should be
 implemented at the Plugin level.  That is, if you wish to add a feature not
 currently present in the Module Container class, you should create a new
 plugin.
 
-Plugins and Modules should in theory be independants.  Note that it is possible
+Plugins and Modules should in theory be independents.  Note that it is possible
 that some of these classes need to access and modify shared Module_Container 
 resources or interact with other Plugins or Modules.  Those interactions should
 however remains as minimal as possible to obtain the desired functionalities and
 each individual Plugins or Modules should implement some dynamical handling of
-the shared resources and react appropriattly when these resources change.
+the shared resources and react appropriately when these resources change.
 """
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
@@ -256,49 +256,53 @@ class Module_Container(_gui.QMainWindow):
     def __setitem__(self, key, value):
         self.addModules(key, **value)
         
- 
-     
-def launchApp(launch_script_main):
-    """
-    Not done yet!  Don't use this!
-    
-    I plan on building a function sort of like this that makes the startup script much easier
-    """
-    # This part is a bit more involved (compared to the creation of the rest of the
-    # UI), so if you don't feel comfortable with what's happenning here, leave it 
-    # alone...
-    
-    #uiThread = _core.QThread()
-    app = _gui.QApplication([])
-    
-    # Create and display the splash screen
-    splash_pix = _gui.QPixmap('SplashScreen.png')
-    splash = _gui.QSplashScreen(splash_pix, _core.Qt.WindowStaysOnTopHint)
-    splash.setMask(splash_pix.mask())
-    splash.show()
-    app.processEvents()
 
 
-    import inspect as _inspect
-    import IPython
-    from IPython.utils.frame import extract_module_locals
-    
-    func_src = _inspect.getsourcelines(launch_script_main)[0]
-    print((_inspect.getmodule(launch_script_main)))
-    
-    func_src.append('splash.finish()')
-    
-    # Runs a new IPython kernel, that begins the qt event loop.
-    #
-    # Other options for the ipython kernel can be found at:
-    # https://ipython.org/ipython-doc/dev/config/options/kernel.html
-    #
-    # To connect to the kernel use the info in <...>\.ipython\profile_default\security\kernel-example.json
-    # where <...> under windows is probably C:\Users\<username>
-    (current_module, current_ns) = extract_module_locals(depth=0)
-    IPython.start_kernel(user_ns = current_ns, 
-                         exec_lines=func_src, 
-                         gui='qt', 
-                         connection_file='kernel-example.json')
+
+# DEPRECATED
+
+
+# def launchApp(launch_script_main):
+#     """
+#     Not done yet!  Don't use this!
+#
+#     I plan on building a function sort of like this that makes the startup script much easier
+#     """
+#     # This part is a bit more involved (compared to the creation of the rest of the
+#     # UI), so if you don't feel comfortable with what's happenning here, leave it
+#     # alone...
+#
+#     #uiThread = _core.QThread()
+#     app = _gui.QApplication([])
+#
+#     # Create and display the splash screen
+#     splash_pix = _gui.QPixmap('SplashScreen.png')
+#     splash = _gui.QSplashScreen(splash_pix, _core.Qt.WindowStaysOnTopHint)
+#     splash.setMask(splash_pix.mask())
+#     splash.show()
+#     app.processEvents()
+#
+#
+#     import inspect as _inspect
+#     import IPython
+#     from IPython.utils.frame import extract_module_locals
+#
+#     func_src = _inspect.getsourcelines(launch_script_main)[0]
+#     print((_inspect.getmodule(launch_script_main)))
+#
+#     func_src.append('splash.finish()')
+#
+#     # Runs a new IPython kernel, that begins the qt event loop.
+#     #
+#     # Other options for the ipython kernel can be found at:
+#     # https://ipython.org/ipython-doc/dev/config/options/kernel.html
+#     #
+#     # To connect to the kernel use the info in <...>\.ipython\profile_default\security\kernel-example.json
+#     # where <...> under windows is probably C:\Users\<username>
+#     (current_module, current_ns) = extract_module_locals(depth=0)
+#     IPython.start_kernel(user_ns = current_ns,
+#                          exec_lines=func_src,
+#                          gui='qt',
+#                          connection_file='kernel-example.json')
 
    

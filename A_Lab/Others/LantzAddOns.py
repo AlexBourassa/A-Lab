@@ -7,58 +7,18 @@
 
 from lantz import Feat, DictFeat, Action, Q_
 from lantz.feat import MISSING
-from lantz.ui.widgets import DictFeatWidget, FeatWidget, connect_feat
+from lantz.ui.widgets import DictFeatWidget, FeatWidget, connect_feat, MagnitudeMixin, register_wrapper, WidgetMixin
 from inspect import signature
+
 from pyqtgraph.parametertree.Parameter import Parameter, registerParameterType
 from pyqtgraph.parametertree.parameterTypes import WidgetParameterItem
+from pyqtgraph.parametertree.ParameterItem import ParameterItem
+import pyqtgraph as pg
+from decimal import Decimal as D
+from pyqtgraph.python2_3 import asUnicode
+
 from PyQt4 import QtGui as _gui
 
-
-# def _mod_num_param(tree, device, feat_name, path, units='', key_widget=None):
-#     """
-#     This generates a function to modify a param on a feat changed signal
-#     """
-#     def _inner(new_val, old_val):
-#         """
-#         Change the param to new value
-#         """
-#         fattr = getattr(device, feat_name)
-#         if "Quantity" in str(type(new_val)):
-#             new_val = new_val.to(units)
-#             tree.addParam(path, value = new_val.magnitude, 
-#                           siPrefix = True, suffix = str(new_val.units))
-#         elif type(fattr)==str or type(fattr)==bool:
-#             tree.addParam(path, value = new_val)
-#         else:
-#             raise Exception
-#     return _inner
-
-
-# def _mod_num_feat(device, feat_name, units=''):
-#     """
-#     This generates a function to modify a feat on a param changed signal
-#     """
-#     def _inner(param, value):
-#         """
-#         Try to change the feat to value, if this fails, reset the param to the
-#         actual value of the feat.
-#         """
-#         fattr = getattr(device, feat_name)
-#         if "Quantity" in str(type(fattr)):
-#             try:
-#                 setattr(device, feat_name, Q_(value,units))
-#             except Exception as e:
-#                 param.setValue(fattr.to(units).magnitude)
-#                 raise e
-#         elif type(fattr)==str or type(fattr)==bool:
-#             try:
-#                 setattr(device, feat_name, value)
-#             except Exception as e:
-#                 param.setValue(fattr)
-#                 raise e
-#         else:
-#             raise Exception
-#     return _inner
 
 def _buildStaticFunction(func, *args, **kwargs):
     def _inner():
@@ -97,58 +57,26 @@ def generateLantzParams(tree, device, group_prefix =''):
 
         if type(fcurrent) == Feat:
             path += '/Feats/' + fname
-            
+
+            skip = False
             if "Quantity" in str(type(fattr)): value = fattr.magnitude
             else: value = fattr
 
             feat = device.feats[fname]
-            tree.addParam(path, value = value, feat = feat, type='feats', device = device)
-            connect_feat(list(tree[path].items)[0].widget, device, feat_name=fname)
-            #Rebuild the limits to get a format accepted by the Spinbox widget
-            # bounds = modifiers['limits']
-            # precision = None # Right now I think, I prefer not using this to set the step size of the Spinbox, but this could be done
-            # if not bounds is None:
-            #     if len(bounds) == 1: bounds = (0, bounds[0])
-            #     if len(bounds) == 3:
-            #         precision = bounds[2]
-            #         bounds = (bounds[0], bounds[1])
+            if not skip:
+                tree.addParam(path, value = value, feat = feat, type='feats', target = device)
+                w = list(tree[path].items)[0].widget
+                connect_feat(w, device, feat_name=fname)
+                w.setValue(feat.instance.recall(fname))
 
-            # #Do thing sligthly differently for quantities than standar Python types
-            # if "Quantity" in str(type(fattr)):
-            #     param = tree.addParam(path, value = fattr.magnitude, siPrefix = True, suffix = str(fattr.units), bounds=bounds)
-            #     fattr_changed.connect(_mod_num_param(tree, device, fname, path, units = str(fattr.units)))
-            #     tree[path].sigValueChanged.connect(_mod_num_feat(device, fname, units= str(fattr.units)))
-            #     tree[path].setWritable(not fcurrent.read_once)
-            # elif not modifiers['values'] is None and type(fattr)!=bool:
-            #     param = tree.addParam(path, value = fattr, values = list(modifiers['values'].keys()), type='list')
-            #     fattr_changed.connect(_mod_num_param(tree, device, fname, path))
-            #     tree[path].sigValueChanged.connect(_mod_num_feat(device, fname))
-            #     tree[path].setWritable(not fcurrent.read_once)
-            # elif type(fattr)==str or type(fattr)==bool:
-            #     tree[path] = fattr
-            #     fattr_changed.connect(_mod_num_param(tree, device, fname, path))
-            #     tree[path].sigValueChanged.connect(_mod_num_feat(device, fname))
-            #     tree[path].setWritable(not fcurrent.read_once)
-            # else:
-            #     print("Couldn't find the type of attribute" + fname)
-
-        elif type(fcurrent)==DictFeat:
-            path += '/DictFeats/' + fname
-
-            if "Quantity" in str(type(fattr)): value = fattr.magnitude
-            else: value = fattr
-
-            feat = device.feats[fname]
-            tree.addParam(path, value = value, feat = feat, type='dictfeats', device = device)
-            #connect_feat(list(tree[path].items)[0].widget, device, feat_name=fname)
-            # if not modifiers['keys'] is None:
-            #     param = tree.addParam(path + '/key', value = modifiers['keys'][0], values = modifiers['keys'], type='list')
-            #     tree[path+'/value'] = fattr[modifiers['keys'][0]]
-            #     # fattr_changed.connect(_mod_num_param(tree, device, fname, path))
-            #     # tree[path+'/value'].sigValueChanged.connect(_mod_num_feat(device, fname))
-            #     # tree[path+'/value'].setWritable(not fcurrent.read_once)
-            # else:
-            #     print("DictFeat GUI with no keys argument not implemented yet...")
+        # elif type(fcurrent)==DictFeat:
+        #     path += '/DictFeats/' + fname
+        #
+        #     if "Quantity" in str(type(fattr)): value = fattr.magnitude
+        #     else: value = fattr
+        #
+        #     feat = device.feats[fname]
+        #     tree.addParam(path, value = value, feat = feat, type='dictfeats', device = device)
 
 
 
@@ -185,8 +113,9 @@ def generateLantzParams(tree, device, group_prefix =''):
 class FeatParameterItem(WidgetParameterItem):
     """
     Lantz Feat param
-    
     """
+    useCustom = True
+
     def __init__(self, param, depth):
         self.targetValue = None
         WidgetParameterItem.__init__(self, param, depth)
@@ -194,36 +123,85 @@ class FeatParameterItem(WidgetParameterItem):
         
     def makeWidget(self):
         opts = self.param.opts
-        t = opts['type']
-        v = opts['feat']
-        d = opts['device']
+        feat = opts['feat']
 
-        w = FeatWidget(parent=self.parent(), target=d, feat=v)
+        w = pg_FeatWidget(self.parent(), **opts)
+
+        # isQuantity = lambda x: 'Quantity' in str(type(x.feat.get_cache(x.instance)))
+        # isInt = lambda x: int == type(x.feat.get_cache(x.instance))
+        # if (isInt(feat) or isQuantity(feat)) and self.useCustom:
+        #     defs = {
+        #         'value': 0, 'min': None, 'max': None, 'int': isInt(feat),
+        #         'step': 1.0, 'minStep': 1.0, 'dec': not isInt(feat),
+        #         'siPrefix': not isInt(feat), 'suffix': ''
+        #     }
+        #     defs.update(opts)
+        #     if 'limits' in opts:
+        #         defs['bounds'] = opts['limits']
+        #     w = pgSpinBox()
+        #     w.setOpts(**defs)
+        #     w.sigChanged = w.sigValueChanged
+        #     w.sigChanging = w.sigValueChanging
+        #
+        #     #Wrap with lantz
+        #     pgSpinbox_WidgetMixin.wrap(w)
+        #     w.bind_feat(feat)
+        #     w.lantz_target = d
+        # else:
+        #     w = FeatWidget(self.parent(), d, feat)
+        #     w.sigChanged = w.valueChanged
+
         w.setMaximumHeight(20)  ## set to match height of spin box and line edit
-        w.sigChanged = w.valueChanged
+
+        #w.valueChanged.connect(lambda val: self.valueChanged(self.param, val))
         #w.value = w.value
-        w._setValue = w.setValue
-        w.setValue = self.setValue
 
         self.widget = w 
 
-        if v.values and set(v.values)=={True, False}: 
+        if feat.values and set(feat.values)=={True, False}:
             self.hideWidget = False
         return w
 
-    def setValue(self, val):
-        opts = self.param.opts
-        v = opts['feat']
-        d = opts['device']
-        if val is None or v is None: return
-        if not "Feat" in str(type(val)): 
-            return self.widget._setValue(val)
-        new_val = val.feat.fget(d)
-        if not v.values is None:
-            new_val = next((key for key,value in v.values.items() if value==new_val))
-        self.widget._setValue(new_val)
+    def valueChanged(self, param, val, force=False):
+        ## Little hack to make sure self.widgetValueChanged is connected otherwise we might get an error when disconnecting
+        try:
+            self.widget.sigChanged.connect(self.widgetValueChanged)
+        finally:
+            super().valueChanged(param, val, force=False)
 
+class pg_FeatWidget(object):
 
+    def __new__(cls, parent, target, feat, **opts):
+        """
+        :param parent: parent widget.
+        :param target: driver object to connect.
+        :param feat: Feat to connect.
+        """
+
+        isQuantity = lambda x: 'Quantity' in str(type(x.feat.get_cache(x.instance)))
+        isInt = lambda x: int == type(x.feat.get_cache(x.instance))
+        if (isInt(feat) or isQuantity(feat)):
+            defs = {
+                'value': 0, 'min': None, 'max': None, 'int': isInt(feat),
+                'step': 1.0, 'minStep': 1.0, 'dec': not isInt(feat),
+                'siPrefix': not isInt(feat), 'suffix': ''
+            }
+            defs.update(opts)
+            if 'limits' in opts:
+                defs['bounds'] = opts['limits']
+            w = pgSpinBox()
+            w.setOpts(**defs)
+            w.sigChanged = w.sigValueChanged
+            w.sigChanging = w.sigValueChanging
+
+            # Wrap with lantz
+            pgSpinbox_WidgetMixin.wrap(w)
+            w.bind_feat(feat)
+            w.lantz_target = target
+        else:
+            w = FeatWidget(parent, target, feat)
+            w.sigChanged = w.valueChanged
+        return w
 
 
 
@@ -235,16 +213,49 @@ class FeatParameter(Parameter):
 
 
 
+class pgSpinBox(pg.SpinBox):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sigChanged = self.valueChanged
+
+
+    def setSuffix(self, suffix):
+        # remove the space added by lantz
+        super().setSuffix(suffix[1:])
+
+    def f(self, value):
+        print(value)
+
+
+@register_wrapper
+class pgSpinbox_WidgetMixin(MagnitudeMixin):
+    _WRAPPED = (pgSpinBox, pg.SpinBox)
+
+    def setValue(self, value=MISSING, **kwargs):
+        if value is MISSING:
+            font = _gui.QFont()
+            font.setItalic(True)
+            self.setFont(font)
+        elif isinstance(value, Q_):
+            super().setValue(value.to(self._units).magnitude)
+        else:
+            super().setValue(value)
+
+
+
+
+
 class DictFeatParameterItem(WidgetParameterItem):
     """
     Lantz Feat param
-    
+
     """
     def __init__(self, param, depth):
         self.targetValue = None
         WidgetParameterItem.__init__(self, param, depth)
-        
-        
+
+
     def makeWidget(self):
         opts = self.param.opts
         t = opts['type']
@@ -254,29 +265,17 @@ class DictFeatParameterItem(WidgetParameterItem):
         w = DictFeatWidget(parent=self.parent(), target=d, feat=v)
         #w.setMaximumHeight(40)  ## set to match height of spin box and line edit
         w.sigChanged = w._value_widget.valueChanged
-        w._setValue = w.setValue
-        w.setValue = self.setValue
+
         self.widget = w  ## needs to be set before limits are changed
         self.hideWidget = False
         return w
 
-    def setValue(self, val):
-        opts = self.param.opts
-        v = opts['feat']
-        d = opts['device']
-        if type(self.widget._key_widget) == _gui.QComboBox:
-            key = self.widget._keys[self.widget._key_widget.currentIndex()]
-        elif type(self.widget._key_widget) == _gui.QLineEdit:
-            key = self.widget._key_widget.text()
-        if val is None or v is None: return
-        if not "Feat" in str(type(val)): 
-            return self.widget._setValue(val)
-        new_val = val.df.fget(d, key)
-        if not v.values is None:
-            new_val = next((key for key,value in v.values.items() if value==new_val))
-        self.widget._setValue(new_val)
-
-
+    def valueChanged(self, param, val, force=False):
+        ## Little hack to make sure self.widgetValueChanged is connected otherwise we might get an error when disconnecting
+        try:
+            self.widget.sigChanged.connect(self.widgetValueChanged)
+        finally:
+            super().valueChanged(param, val, force=False)
 
 
 
@@ -285,3 +284,41 @@ class DictFeatParameter(Parameter):
 
     def __init__(self, **opts):
         Parameter.__init__(self, **opts)
+
+
+class pg_DictFeatWidget(DictFeatWidget):
+    """Widget to show a DictFeat.
+
+    :param parent: parent widget.
+    :param target: driver object to connect.
+    :param feat: DictFeat to connect.
+    """
+
+    def __init__(self, parent, target, feat):
+        super().__init__(parent)
+        self._feat = feat
+
+        layout = _gui.QHBoxLayout(self)
+
+        if feat.keys:
+            wid = _gui.QComboBox()
+            if isinstance(feat.keys, dict):
+                self._keys = list(feat.keys.keys())
+            else:
+                self._keys = list(feat.keys)
+
+            wid.addItems([str(key) for key in self._keys])
+            wid.currentIndexChanged.connect(self._combobox_changed)
+        else:
+            wid = _gui.QLineEdit()
+            wid.textChanged.connect(self._lineedit_changed)
+
+        layout.addWidget(wid)
+        self._key_widget = wid
+
+        wid = WidgetMixin.from_feat(feat)
+        wid.bind_feat(feat)
+        wid.feat_key = self._keys[0]
+        wid.lantz_target = target
+        layout.addWidget(wid)
+        self._value_widget = wid

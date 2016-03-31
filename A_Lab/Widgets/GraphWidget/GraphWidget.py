@@ -162,15 +162,18 @@ class GraphWidget(_gui.QWidget):
         
     def __setitem__(self, key, value):
         self.addTrace(key, **value)
-		
+
+
+
+
 
 class PyQtGraphWidget(GraphWidget):
     
     def __init__(self, parent=None, **kwargs):
         """
         This widget wraps a pyqtgraph PlotWidget (attribute <plot>), so it can 
-        easilly be used as a standard QWidget.  It also add some methods to
-        easilly handle multiple traces creation, deletion and update.
+        easily be used as a standard QWidget.  It also add some methods to
+        easily handle multiple traces creation, deletion and update.
         """
         #Initialized
         super(PyQtGraphWidget, self).__init__(parent=parent)
@@ -286,5 +289,4 @@ class PyQtGraphWidget(GraphWidget):
         """
         x, y = self.traces[name].getData(transformed=True)
         self.pyqt_traces[name].setData(x=x, y=y, **self.traces[name].kwargs)
-    
 

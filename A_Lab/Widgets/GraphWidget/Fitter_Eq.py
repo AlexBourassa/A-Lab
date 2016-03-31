@@ -8,6 +8,7 @@
 import numpy as _np
 
 from scipy.optimize import leastsq
+from scipy.special import erf
 
 #import inspect as _inspect
 #all_functions = _inspect.getmembers()
@@ -28,7 +29,7 @@ def getAllFitFct():
     """
     Returns a dictionary associting each fit fct with an instance of it's class
     """
-    fitFct = {'Laurentzian':Laurentzian(), 'Gaussian':Gaussian(), 'Cos':Cos(), 'LaurentzianWithConstInterference':LaurentzianWithConstInterference(), 'Linear':Linear(), 'VillQintr':VillQintr(), 'Power':Power()}    
+    fitFct = {'Erf':Erf(),'Laurentzian':Laurentzian(), 'Gaussian':Gaussian(), 'Cos':Cos(), 'LaurentzianWithConstInterference':LaurentzianWithConstInterference(), 'Linear':Linear(), 'VillQintr':VillQintr(), 'Power':Power()}
     return fitFct
 
 class Generic_Fct():
@@ -540,7 +541,16 @@ class Power(Generic_Fct):
         fit = A*x**y+B              
         return fit
 
+class Erf(Generic_Fct):
+    def getParamList(self):
+        return ['A', 'B','x0','y0']
 
+    def applyEq(self, p, x):
+        # Unpack the parameters
+        A, B, x0, y0 = p
+        # Apply the fct
+        fit = A*erf(B*(x-x0))+y0
+        return fit
 
 
 
