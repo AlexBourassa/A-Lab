@@ -6,7 +6,7 @@
 """
 
 from lantz import Feat, DictFeat, Action, Q_
-from lantz.feat import MISSING
+from lantz.feat import MISSING, _dget
 from lantz.ui.widgets import DictFeatWidget, FeatWidget, connect_feat, MagnitudeMixin, register_wrapper, WidgetMixin
 from inspect import signature
 
@@ -67,16 +67,25 @@ def generateLantzParams(tree, device, group_prefix =''):
                 tree.addParam(path, value = value, feat = feat, type='feats', target = device)
                 w = list(tree[path].items)[0].widget
                 connect_feat(w, device, feat_name=fname)
-                w.setValue(feat.instance.recall(fname))
+                # w.setValue(feat.instance.recall(fname))
 
-        # elif type(fcurrent)==DictFeat:
-        #     path += '/DictFeats/' + fname
-        #
-        #     if "Quantity" in str(type(fattr)): value = fattr.magnitude
-        #     else: value = fattr
-        #
-        #     feat = device.feats[fname]
-        #     tree.addParam(path, value = value, feat = feat, type='dictfeats', device = device)
+        elif type(fcurrent)==DictFeat:
+            path += '/DictFeats/' + fname
+
+            skip = False
+            feat = device.feats[fname]
+            df = feat.feat
+            key = _dget(df.modifiers, device, fname)['keys'][0]
+            value = fattr[key]
+            if "Quantity" in str(type(value)): value = value.magnitude
+            else: value = value
+            print(value)
+
+            if not skip:
+                tree.addParam(path, value=value, feat=feat, type='dictfeats', target=device)
+                w = list(tree[path].items)[0].widget
+                #connect_feat(w, device, feat_name=fname)
+                #w.setValue(feat.instance.recall(fname))
 
 
 
@@ -108,7 +117,9 @@ def generateLantzParams(tree, device, group_prefix =''):
 
 
 
-
+##-------------------------------------------------------------------------------------
+#           Parameter and ParameterItems making use of custom pg_FeatWidget and pg_DictFeatWidget
+##-------------------------------------------------------------------------------------
 
 class FeatParameterItem(WidgetParameterItem):
     """
@@ -119,46 +130,16 @@ class FeatParameterItem(WidgetParameterItem):
     def __init__(self, param, depth):
         self.targetValue = None
         WidgetParameterItem.__init__(self, param, depth)
-        
-        
+
     def makeWidget(self):
         opts = self.param.opts
         feat = opts['feat']
 
         w = pg_FeatWidget(self.parent(), **opts)
-
-        # isQuantity = lambda x: 'Quantity' in str(type(x.feat.get_cache(x.instance)))
-        # isInt = lambda x: int == type(x.feat.get_cache(x.instance))
-        # if (isInt(feat) or isQuantity(feat)) and self.useCustom:
-        #     defs = {
-        #         'value': 0, 'min': None, 'max': None, 'int': isInt(feat),
-        #         'step': 1.0, 'minStep': 1.0, 'dec': not isInt(feat),
-        #         'siPrefix': not isInt(feat), 'suffix': ''
-        #     }
-        #     defs.update(opts)
-        #     if 'limits' in opts:
-        #         defs['bounds'] = opts['limits']
-        #     w = pgSpinBox()
-        #     w.setOpts(**defs)
-        #     w.sigChanged = w.sigValueChanged
-        #     w.sigChanging = w.sigValueChanging
-        #
-        #     #Wrap with lantz
-        #     pgSpinbox_WidgetMixin.wrap(w)
-        #     w.bind_feat(feat)
-        #     w.lantz_target = d
-        # else:
-        #     w = FeatWidget(self.parent(), d, feat)
-        #     w.sigChanged = w.valueChanged
-
         w.setMaximumHeight(20)  ## set to match height of spin box and line edit
+        self.widget = w
 
-        #w.valueChanged.connect(lambda val: self.valueChanged(self.param, val))
-        #w.value = w.value
-
-        self.widget = w 
-
-        if feat.values and set(feat.values)=={True, False}:
+        if feat.values and set(feat.values) == {True, False}:
             self.hideWidget = False
         return w
 
@@ -169,17 +150,97 @@ class FeatParameterItem(WidgetParameterItem):
         finally:
             super().valueChanged(param, val, force=False)
 
+
+class DictFeatParameterItem(WidgetParameterItem):
+    """
+    Lantz Feat param
+
+    """
+    def __init__(self, param, depth):
+        self.targetValue = None
+        WidgetParameterItem.__init__(self, param, depth)
+
+
+    def makeWidget(self):
+        opts = self.param.opts
+
+        #w = DictFeatWidget(parent=self.parent(), target=opts['target'], feat=opts['feat'])
+        w = pg_DictFeatWidget(parent=self.parent(), **opts)
+
+        w.sigChanged = w._value_widget.valueChanged
+
+        #w.setMaximumHeight(20)  ## set to match height of spin box and line edit
+
+        self.widget = w  ## needs to be set before limits are changed
+        self.hideWidget = False
+        return w
+
+    def valueChanged(self, param, val, force=False):
+        ## Little hack to make sure self.widgetValueChanged is connected otherwise we might get an error when disconnecting
+        try:
+            self.widget.sigChanged.connect(self.widgetValueChanged)
+        finally:
+            super().valueChanged(param, val, force=False)
+
+class FeatParameter(Parameter):
+    itemClass = FeatParameterItem
+
+    def __init__(self, **opts):
+        Parameter.__init__(self, **opts)
+
+class DictFeatParameter(Parameter):
+    itemClass = DictFeatParameterItem
+
+    def __init__(self, **opts):
+        Parameter.__init__(self, **opts)
+
+
+##-------------------------------------------------------------------------------------
+#           Modified Spinbox to work with the Lantz framework
+##-------------------------------------------------------------------------------------
+
+class pgSpinBox(pg.SpinBox):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sigChanged = self.valueChanged
+
+
+    def setSuffix(self, suffix):
+        # remove the space added by lantz
+        super().setSuffix(suffix[1:])
+
+
+@register_wrapper
+class pgSpinbox_WidgetMixin(MagnitudeMixin):
+    _WRAPPED = (pgSpinBox, pg.SpinBox)
+
+    def setValue(self, value=MISSING, **kwargs):
+        if value is MISSING:
+            font = _gui.QFont()
+            font.setItalic(True)
+            self.setFont(font)
+        elif isinstance(value, Q_):
+            super().setValue(value.to(self._units).magnitude)
+        else:
+            super().setValue(value)
+
+
+##-------------------------------------------------------------------------------------
+#           Modified FeatWidget and DictFeatWidget to work with the pyqtgraph framework
+##-------------------------------------------------------------------------------------
+
 class pg_FeatWidget(object):
 
-    def __new__(cls, parent, target, feat, **opts):
+    def __new__(cls, parent, target, feat, value, **opts):
         """
         :param parent: parent widget.
         :param target: driver object to connect.
         :param feat: Feat to connect.
         """
 
-        isQuantity = lambda x: 'Quantity' in str(type(x.feat.get_cache(x.instance)))
-        isInt = lambda x: int == type(x.feat.get_cache(x.instance))
+        isQuantity = lambda x: 'Quantity' in str(type(value))
+        isInt = lambda x: int == type(value)
         if (isInt(feat) or isQuantity(feat)):
             defs = {
                 'value': 0, 'min': None, 'max': None, 'int': isInt(feat),
@@ -201,90 +262,8 @@ class pg_FeatWidget(object):
         else:
             w = FeatWidget(parent, target, feat)
             w.sigChanged = w.valueChanged
+
         return w
-
-
-
-class FeatParameter(Parameter):
-    itemClass = FeatParameterItem
-
-    def __init__(self, **opts):
-        Parameter.__init__(self, **opts)
-
-
-
-class pgSpinBox(pg.SpinBox):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.sigChanged = self.valueChanged
-
-
-    def setSuffix(self, suffix):
-        # remove the space added by lantz
-        super().setSuffix(suffix[1:])
-
-    def f(self, value):
-        print(value)
-
-
-@register_wrapper
-class pgSpinbox_WidgetMixin(MagnitudeMixin):
-    _WRAPPED = (pgSpinBox, pg.SpinBox)
-
-    def setValue(self, value=MISSING, **kwargs):
-        if value is MISSING:
-            font = _gui.QFont()
-            font.setItalic(True)
-            self.setFont(font)
-        elif isinstance(value, Q_):
-            super().setValue(value.to(self._units).magnitude)
-        else:
-            super().setValue(value)
-
-
-
-
-
-class DictFeatParameterItem(WidgetParameterItem):
-    """
-    Lantz Feat param
-
-    """
-    def __init__(self, param, depth):
-        self.targetValue = None
-        WidgetParameterItem.__init__(self, param, depth)
-
-
-    def makeWidget(self):
-        opts = self.param.opts
-        t = opts['type']
-        v = opts['feat']
-        d = opts['device']
-
-        w = DictFeatWidget(parent=self.parent(), target=d, feat=v)
-        #w.setMaximumHeight(40)  ## set to match height of spin box and line edit
-        w.sigChanged = w._value_widget.valueChanged
-
-        self.widget = w  ## needs to be set before limits are changed
-        self.hideWidget = False
-        return w
-
-    def valueChanged(self, param, val, force=False):
-        ## Little hack to make sure self.widgetValueChanged is connected otherwise we might get an error when disconnecting
-        try:
-            self.widget.sigChanged.connect(self.widgetValueChanged)
-        finally:
-            super().valueChanged(param, val, force=False)
-
-
-
-class DictFeatParameter(Parameter):
-    itemClass = DictFeatParameterItem
-
-    def __init__(self, **opts):
-        Parameter.__init__(self, **opts)
-
 
 class pg_DictFeatWidget(DictFeatWidget):
     """Widget to show a DictFeat.
@@ -294,8 +273,8 @@ class pg_DictFeatWidget(DictFeatWidget):
     :param feat: DictFeat to connect.
     """
 
-    def __init__(self, parent, target, feat):
-        super().__init__(parent)
+    def __init__(self, parent, target, feat, **opts):
+        _gui.QWidget.__init__(self,parent)
         self._feat = feat
 
         layout = _gui.QHBoxLayout(self)
@@ -316,9 +295,12 @@ class pg_DictFeatWidget(DictFeatWidget):
         layout.addWidget(wid)
         self._key_widget = wid
 
-        wid = WidgetMixin.from_feat(feat)
-        wid.bind_feat(feat)
-        wid.feat_key = self._keys[0]
-        wid.lantz_target = target
+        wid = pg_FeatWidget(parent, target, feat, **opts)
         layout.addWidget(wid)
+        self.sigChanged = wid.sigChanged
+        #self.sigChanging = wid.sigChanging
+
+        wid.feat_key = self._keys[0]
         self._value_widget = wid
+
+
