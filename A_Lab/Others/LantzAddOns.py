@@ -18,6 +18,7 @@ from decimal import Decimal as D
 from pyqtgraph.python2_3 import asUnicode
 
 from PyQt4 import QtGui as _gui
+from PyQt4 import QtCore as _core
 
 
 def _buildStaticFunction(func, *args, **kwargs):
@@ -59,15 +60,19 @@ def generateLantzParams(tree, device, group_prefix =''):
             path += '/Feats/' + fname
 
             skip = False
-            if "Quantity" in str(type(fattr)): value = fattr.magnitude
-            else: value = fattr
+            # if "Quantity" in str(type(fattr)): value = fattr.magnitude
+            # else: value = fattr
+            value = fattr
 
             feat = device.feats[fname]
             if not skip:
                 tree.addParam(path, value = value, feat = feat, type='feats', target = device)
                 w = list(tree[path].items)[0].widget
                 connect_feat(w, device, feat_name=fname)
-                # w.setValue(feat.instance.recall(fname))
+                try:
+                    w.setValue(feat.instance.recall(fname))
+                except:
+                    pass
 
         elif type(fcurrent)==DictFeat:
             path += '/DictFeats/' + fname
@@ -77,9 +82,8 @@ def generateLantzParams(tree, device, group_prefix =''):
             df = feat.feat
             key = _dget(df.modifiers, device, fname)['keys'][0]
             value = fattr[key]
-            if "Quantity" in str(type(value)): value = value.magnitude
-            else: value = value
-            print(value)
+            # if "Quantity" in str(type(value)): value = value.magnitude
+            # else: value = value
 
             if not skip:
                 tree.addParam(path, value=value, feat=feat, type='dictfeats', target=device)
@@ -180,7 +184,7 @@ class DictFeatParameterItem(WidgetParameterItem):
         try:
             self.widget.sigChanged.connect(self.widgetValueChanged)
         finally:
-            super().valueChanged(param, val, force=False)
+            super().valueChanged(param, val, force=force)
 
 class FeatParameter(Parameter):
     itemClass = FeatParameterItem
@@ -209,6 +213,9 @@ class pgSpinBox(pg.SpinBox):
     def setSuffix(self, suffix):
         # remove the space added by lantz
         super().setSuffix(suffix[1:])
+
+    def f(self, value):
+        print(value)
 
 
 @register_wrapper
@@ -296,11 +303,20 @@ class pg_DictFeatWidget(DictFeatWidget):
         self._key_widget = wid
 
         wid = pg_FeatWidget(parent, target, feat, **opts)
-        layout.addWidget(wid)
-        self.sigChanged = wid.sigChanged
-        #self.sigChanging = wid.sigChanging
+        wid.feat_key = self._keys[0]
+        wid.lantz_target = target
 
         wid.feat_key = self._keys[0]
+        layout.addWidget(wid)
+
+        #self.sigChanged = wid.sigChanged
+        #self.sigChanging = wid.sigChanging
+
         self._value_widget = wid
+
+    @_core.Slot(int, object, object)
+    def _combobox_changed(self, value, old_value=MISSING, other=MISSING):
+        super()._combobox_changed(value, old_value=old_value, other=other)
+        self._value_widget.on_feat_value_changed(self._feat.get_cache(self._value_widget.lanz_target, key=self._value_widget.feat_key), other={'key':self._value_widget.feat_key})
 
 
