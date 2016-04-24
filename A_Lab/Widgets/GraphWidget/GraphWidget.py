@@ -290,3 +290,6 @@ class PyQtGraphWidget(GraphWidget):
         x, y = self.traces[name].getData(transformed=True)
         self.pyqt_traces[name].setData(x=x, y=y, **self.traces[name].kwargs)
 
+
+
+

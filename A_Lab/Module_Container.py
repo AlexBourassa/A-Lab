@@ -21,8 +21,13 @@ however remains as minimal as possible to obtain the desired functionalities and
 each individual Plugins or Modules should implement some dynamical handling of
 the shared resources and react appropriately when these resources change.
 """
+
+#@Bug: I have to load this one first or else PyQt defaults to V1...
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
+
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
+import sip as _sip
 from A_Lab.Docked_Module import *
 
 import os as _os
@@ -107,12 +112,15 @@ class Module_Container(_gui.QMainWindow):
         self.menu['File']['Close'].triggered.connect(lambda: self.close())
                 
     def removeModule(self, name):
-        print(("Removing " + name))
-        mod = self.modules.pop(name)
-        d = self._docked_widgets.pop(name)
-        del mod
-        del d
+        d = self._docked_widgets[name]
+        d.close()
+        d.destroyEvent()
+        d.deleteLater()
+        del self._docked_widgets[name]
+        del self.modules[name]
         self.moduleRemoved.emit(name)
+
+
         
     def addModule(self, module_name, module_widget, initial_pos=_core.Qt.TopDockWidgetArea):
         """

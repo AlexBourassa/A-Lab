@@ -45,7 +45,7 @@ class GraphTrace(_core.QObject):
             try:
                 self.kwargs['feeder'].setData = type(self.kwargs['feeder']).setData#reconnect to previous function
             except:
-                self.kwargs['feeder'].setData = lambda: 0#Do nothing
+                self.kwargs['feeder'].setData = lambda: None#Do nothing
         feeder.setData = self.setData
         self.kwargs['feeder'] = feeder
         return
@@ -100,7 +100,8 @@ class GraphTrace(_core.QObject):
         if 'feeder' in kwargs: kwargs.pop('feeder') #Cannot keep the feeder instance
         file_handler.addHeaders(kwargs=kwargs)
 
-# This is a very simple class that allows for the feeder source to be independant
+
+# This is a very simple class that allows for the feeder source to be independent
 # from the Trace object.  Another way to do this is to simply use the 
 class Generic_TraceFeeder(_core.QObject):       
     def __init__(self, *args, **kwargs):
@@ -108,3 +109,4 @@ class Generic_TraceFeeder(_core.QObject):
         
     def setData(self, x, y):
         raise NotImplemented("The TraceFeeder.setData(x,y) needs to be associated with a specific trace to do something...From a GraphTrace use setFeeder.")
+

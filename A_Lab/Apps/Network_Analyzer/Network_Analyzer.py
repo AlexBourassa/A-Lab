@@ -34,7 +34,7 @@ class NA_Win(_Module_Container.Module_Container):
         #Add the na
         self.na = network_analyzer
         generateLantzParams(self.param_tree, self.na)
-        self.na_widget = E8364B_GUI(parent=self, device=self.na, period = 1100)
+        self.na_widget = E8364B_GUI(parent=self, device=self.na, period = 300)
         self.addModule('na_widget', self.na_widget, initial_pos=_core.Qt.TopDockWidgetArea)
 
         # Enables autosave (for windows settings).  I disable it at the start so it only
@@ -72,10 +72,10 @@ if __name__=='__main__':
     from lantz.drivers.keysight.e8364b import E8364B
     from A_Lab.Others.LantzAddOns import generateLantzParams
     from lantz.log import log_to_screen, DEBUG, INFO, CRITICAL
-    log_to_screen(CRITICAL)
+    log_to_screen(DEBUG)
 
     # Create the network analyzer object
-    na = E8364B('TCPIP0::205.208.85.203::5025::SOCKET')
+    na = E8364B('TCPIP0::192.168.1.106::5025::SOCKET')
     na.initialize()
 
     #Create the UI

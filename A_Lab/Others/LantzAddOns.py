@@ -246,13 +246,14 @@ class pg_FeatWidget(object):
         :param feat: Feat to connect.
         """
 
-        isQuantity = lambda x: 'Quantity' in str(type(value))
-        isInt = lambda x: int == type(value)
-        if (isInt(feat) or isQuantity(feat)):
+        isQuantity = ('Quantity' in str(type(value)))
+        isInt = (int == type(value))
+        isFloat = (float==type(value))
+        if (isInt or isQuantity or isFloat):
             defs = {
-                'value': 0, 'min': None, 'max': None, 'int': isInt(feat),
-                'step': 1.0, 'minStep': 1.0, 'dec': not isInt(feat),
-                'siPrefix': not isInt(feat), 'suffix': ''
+                'value': 0, 'min': None, 'max': None, 'int': isInt,
+                'step': 1.0, 'minStep': 1.0, 'dec': not isInt,
+                'siPrefix': not isInt, 'suffix': ''
             }
             defs.update(opts)
             if 'limits' in opts:

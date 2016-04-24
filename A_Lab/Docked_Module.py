@@ -23,6 +23,18 @@ class Docked_Module(_gui.QDockWidget):
         self.visibilityChanged.emit(self.isVisible())
         
     def closeEvent(self, event):
-        if hasattr(self.widget(),'_closeEvent'): 
-            self.widget()._closeEvent(event)
+        if hasattr(self.widget(),'closeEvent'):
+            self.widget().closeEvent(event)
         _gui.QDockWidget.closeEvent(self, event)
+
+    def destroyEvent(self):
+        """ This will be called explicitelly by the module container before destroying a widget
+        """
+        if hasattr(self.widget(), 'destroyEvent'):
+            self.widget().destroyEvent()
+            self.widget().deleteLater()
+
+    # def showEvent(self, event):
+    #     if hasattr(self.widget(), 'showEvent'):
+    #         self.widget().showEvent(event)
+    #     _gui.QDockWidget.showEvent(self, event)

@@ -12,56 +12,93 @@ from A_Lab.Widgets.GraphWidget.GraphWidget import PyQtGraphWidget
 from A_Lab.Devices.Pooled_Device import Pooled_Device
 from A_Lab.Widgets.GraphWidget.Graph_Widget_Plugin import Graph_Widget_Plugin
 
+from lantz.driver import logger
+
 from PyQt4 import QtGui as _gui
 from PyQt4 import QtCore as _core
 
 from threading import Timer
+import traceback
+import time as _t
 
 import numpy as _np
 
 class E8364B_GUI(PyQtGraphWidget):
     def __init__(self, parent, device, **kwargs):
         super(E8364B_GUI, self).__init__(parent)
-        self.feeder = E8364_Feeder(device=device, **kwargs)
+        self.feeder = E8364B_Feeder(device=device, **kwargs)
         self.addTrace('NA', feeder=self.feeder)
         self.device = device
 
         # Add a fitter
         self.plugins['Data Representation'] = Data_Rep_Menu(self)
 
+        #self.feeder.startPolling()
 
-    def closeEvent(self, event):
-        self.feeder.timer_thread.cancel()
-        super(E8364B_GUI,self).closeEvent(event)
+    def destroyEvent(self):
+        self.feeder.stopPolling()
+        _t.sleep(1)
+        self.feeder.stopThread()
+
+    def showEvent(self,event):
+        self.feeder.startPolling()
+
+    def hideEvent(self, event):
+        self.feeder.stopPolling()
+
+    def disable(self):
+        """Stop the Feeder from poolling.  You would probably want to do this when running an experiment
+        """
+        self.feeder.stopPolling()
+
+    def enable(self):
+        self.feeder.startPolling()
 
 
 
 
 
-class E8364_Feeder(Pooled_Device):
 
-    def __init__(self, device, period=200, debug=True, **kw):
+class E8364B_Feeder(Pooled_Device):
+
+    def __init__(self, device, period=200, **kw):
         self.device = device
-        super(E8364_Feeder, self).__init__(device, debug=debug, **kw)
+        super(E8364B_Feeder, self).__init__(device, start_polling=False, **kw)
 
 
     def x_data(self):
-        import time as _t
-        _t.sleep(1000)
-        return self.device.x_data()
+        logger.propagate = False
+        ans = self.device.x_data()
+        logger.propagate = True
+        return ans
 
     def y_data(self):
-        return self.transform(self.device.y_data())
+        logger.propagate = False
+        ans = self.device.y_data()
+        logger.propagate = True
+        return ans
 
-    def transform(self, x):
+    def transform(self, x, y):
         """Dummy transform that will be editable by the data_rep menu
         """
-        return _np.abs(x)
+        return x, _np.abs(y)
+
+    def query_error_fallback(self, error):
+        # This will stop the timer, attempt to empty the read buffer by doing a read and then start the timer again
+        self.sig_stopPolling.emit()
+        print("Error while querying the device, pooling stopped")
+        # try:
+        #     self.device.read_raw()
+        # finally:
+        #     traceback.print_exc()
+        #     self.sig_startPolling.emit()
+        return
 
 
 class Data_Rep_Menu(Graph_Widget_Plugin):
 
-    ALLOWED_DATA_REP = {'Phase': _np.angle, 'Mag': _np.abs}
+    ALLOWED_DATA_REP = {'Phase': {'transform':lambda x,y: (x, _np.angle(y)),'opts':[]},
+                       'Mag':{'transform':lambda x,y: (x, _np.abs(y)),'opts':[]}}
     def __init__(self, parent_graph):
         Graph_Widget_Plugin.__init__(self, parent_graph)
         self.menu = self.graph.menu
@@ -85,10 +122,9 @@ class Data_Rep_Menu(Graph_Widget_Plugin):
 
 
     def setDataRep(self, rep):
-        print(rep)
         if not rep in self.ALLOWED_DATA_REP: raise Exception("Data Representation not allowed")
         else:
-            self.graph.feeder.transform = self.ALLOWED_DATA_REP[rep]
+            self.graph.feeder.transform = self.ALLOWED_DATA_REP[rep]['transform']
             for other_rep in self.ALLOWED_DATA_REP:
                 self[other_rep].setChecked(False)
             self[rep].setChecked(True)
