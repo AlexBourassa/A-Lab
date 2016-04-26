@@ -112,6 +112,9 @@ class Module_Container(_gui.QMainWindow):
         self.menu['File']['Close'].triggered.connect(lambda: self.close())
                 
     def removeModule(self, name):
+        """
+        Remove a module from the container and destroy the widget
+        """
         d = self._docked_widgets[name]
         d.close()
         d.destroyEvent()

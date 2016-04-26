@@ -36,7 +36,7 @@ def _buildKwargsFromWidgets(func, *args, **kwargs):
     return _inner
 
 
-def generateLantzParams(tree, device, group_prefix =''):
+def generateLantzParams(tree, device, alias = None, group_prefix =''):
     """
     Generate a param group from a Lantz device
     """
@@ -46,7 +46,8 @@ def generateLantzParams(tree, device, group_prefix =''):
         fcurrent = device.feats[fname].feat
 
         #Build a path
-        path = '/' + device.name
+        name = device.name if alias is None else alias
+        path = '/' + name
         if group_prefix != '': '/' + group_prefix + path
 
         #Get the attr and the associated signal
@@ -97,7 +98,8 @@ def generateLantzParams(tree, device, group_prefix =''):
         a_current = device.actions[a_name].action
 
         #Build a path
-        path = '/' + device.name + '/Actions/' + a_name
+        name = device.name if alias is None else alias
+        path = '/' + name + '/Actions/' + a_name
         if group_prefix != '': '/' + group_prefix + path
 
         a_attr = getattr(device, a_name)
