@@ -198,19 +198,28 @@ class PyQtGraphWidget(GraphWidget):
         self.plot_item.addItem(self.lr)
         self.lr.setVisible(False)
         self.legend = self.plot_item.addLegend()
+        self.buildCrossHair()
         self.addStandardPlugins()
         
     def buildMenu(self):
         super(PyQtGraphWidget, self).buildMenu()
-        #Add Actions            
+        #Create Actions
         self.menu['File']['Show Linear Region'] = _gui.QAction('Show Linear Region', 
                                                           self.menu['File']['_QMenu'],
                                                           checkable = True)
+        self.menu['File']['Show Crosshair'] = _gui.QAction('Show Crosshair',
+                                                               self.menu['File']['_QMenu'],
+                                                               checkable=True)
+        #Add actions
+        self.menu['File']['_QMenu'].addAction(self.menu['File']['Show Crosshair'])
         self.menu['File']['_QMenu'].addAction(self.menu['File']['Show Linear Region'])
+
         #Connect signals
-        self.menu['File']['Show Linear Region'].triggered.connect(lambda: self.lr.setVisible(self.menu['File']['Show Linear Region'].isChecked()))    
-        
-        
+        self.menu['File']['Show Linear Region'].triggered.connect(lambda: self.lr.setVisible(self.menu['File']['Show Linear Region'].isChecked()))
+        self.menu['File']['Show Crosshair'].triggered.connect(
+            lambda: self.crosshair['setVisible'](self.menu['File']['Show Crosshair'].isChecked()))
+
+
     def addTrace(self, name, **kwargs):
         """
         Create a new trace with name ID <name>.
@@ -238,6 +247,39 @@ class PyQtGraphWidget(GraphWidget):
         
         self.traceAdded.emit(name)
         return self.traces[name]
+
+    def buildCrossHair(self):
+        # cross hair
+        vLine = _pg.InfiniteLine(angle=90, movable=False)
+        hLine = _pg.InfiniteLine(angle=0, movable=False)
+        label = _pg.TextItem()#justify='right')
+        self.crosshair = {'vLine':vLine, 'hLine':hLine, 'label':label}
+        self.plot_item.addItem(vLine, ignoreBounds=True)
+        self.plot_item.addItem(hLine, ignoreBounds=True)
+        #self.plot_item.addItem(label)
+
+        vb = self.plot_item.vb
+        label.setParentItem(vb)
+
+        def mouseMoved(evt):
+            pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+            if self.plot_item.sceneBoundingRect().contains(pos):
+                mousePoint = vb.mapSceneToView(pos)
+                label.setText("x=%.4g\ty=%.4g" % (mousePoint.x(), mousePoint.y()))
+                #label.setText()
+                vLine.setPos(mousePoint.x())
+                hLine.setPos(mousePoint.y())
+
+        self.proxy = _pg.SignalProxy(self.plot_item.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
+
+        def setVisible(visible):
+            if visible:
+                for o in ['vLine', 'hLine', 'label']: self.crosshair[o].show()
+            else:
+                for o in ['vLine', 'hLine', 'label']: self.crosshair[o].hide()
+
+        self.crosshair['setVisible'] = setVisible
+        setVisible(False)
         
     def getRegionData(self, trace_name, **kw):
         x,y = self.traces[trace_name].getData(**kw)

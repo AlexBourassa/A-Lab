@@ -364,9 +364,7 @@ class Fitter_Control_Widget(_gui.QWidget):
             print("No QSetting object was provided")
         else:
             self.restoreGeometry(settingsObj.value('Geometry'))
-            print("hey")
             lastFunctionUsed = str(settingsObj.value('FunctionName'))
-            print(lastFunctionUsed)
             self.fitFctSelect.setCurrentIndex(list(self.fitFct.keys()).index(lastFunctionUsed))
             
                 

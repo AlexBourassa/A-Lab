@@ -175,12 +175,12 @@ if __name__ == "__main__":
     # Get the current process to be able to kill the kernel from inside the client
     kernel_pid = _os.getpid()
 
-
-    # We can't actually put the code here now, because if the kernel opens up on
-    # a new tcp address the connection won't work properly...  This is the awkward
-    # part...
-    # This is due to the fact that the console is initialized as soon as the windows
-    # is started and it will thus try to connect with a non-existent connection file
+    # I think this is fixed but I have to check
+        # We can't actually put the code here now, because if the kernel opens up on
+        # a new tcp address the connection won't work properly...  This is the awkward
+        # part...
+        # This is due to the fact that the console is initialized as soon as the windows
+        # is started and it will thus try to connect with a non-existent connection file
 #------------------------------------------------------------------------------
     #Create the object
     win = example(autoSave=False, standardPlugins=True, kill_kernel_pid=kernel_pid)
