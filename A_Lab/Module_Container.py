@@ -176,9 +176,9 @@ class Module_Container(_gui.QMainWindow):
             <default_folder>\settings
         """
         if self.params['autoSave']: self.saveUI()
-            
+
         #Close all modules
-        for m in list(self.modules.values()):
+        for m in list(self._docked_widgets.values()):
             m.close()
 
         #Pass on the close event

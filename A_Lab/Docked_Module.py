@@ -24,11 +24,11 @@ class Docked_Module(_gui.QDockWidget):
         
     def closeEvent(self, event):
         if hasattr(self.widget(),'closeEvent'):
-            self.widget().closeEvent(event)
+            self.widget().close()
         _gui.QDockWidget.closeEvent(self, event)
 
     def destroyEvent(self):
-        """ This will be called explicitelly by the module container before destroying a widget
+        """ This will be called explicitly by the module container before destroying a widget
         """
         if hasattr(self.widget(), 'destroyEvent'):
             self.widget().destroyEvent()

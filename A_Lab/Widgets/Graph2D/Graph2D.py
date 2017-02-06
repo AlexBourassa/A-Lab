@@ -12,6 +12,8 @@ from PyQt4 import QtCore as _core
 import pyqtgraph as _pg
 import numpy as _np
 
+from A_Lab.Widgets.GraphWidget.Crosshair import Crosshair
+
 class Graph2D(_gui.QWidget):
     """
     This implements the generic structure of a 2d graph widget and gives
@@ -25,6 +27,7 @@ class Graph2D(_gui.QWidget):
         # Initialize some variables
         self.data = _np.empty(0)
         self.rasterCursor = (0,0)
+        self.plugins = dict()
 
         #Raise error is essential function not implemented
         essential_methods = ['setImage']
@@ -49,6 +52,27 @@ class Graph2D(_gui.QWidget):
         @TODO
         """
         return
+
+    def addStandardPlugins(self):
+        pass
+
+    def buildMenu(self):
+        """
+        Build the menu for the QWidget
+        """
+        # Add a menu bar
+        self.menu = dict()
+        self.menu['_QMenuBar'] = _gui.QMenuBar()
+        self.widget_layout.insertWidget(0, self.menu['_QMenuBar'])
+        self.widget_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Create a File Menu
+        self.menu['File'] = dict()
+        self.menu['File']['_QMenu'] = self.menu['_QMenuBar'].addMenu('File')
+
+        # Add Actions
+        self.menu['File']['Hide'] = self.menu['File']['_QMenu'].addAction('Hide')
+        self.menu['File']['Hide'].triggered.connect(lambda: self.parent().hide())
 
     def initRaster(self, col, row, init_data = None, raster_mode='1r'):
         """
@@ -149,9 +173,19 @@ class PyQtImageWidget(Graph2D):
         self.setLayout(self.widget_layout)
         
         #Put a widget in the layout
-        self.imv = _pg.ImageView(**kwargs)
+        self.plot_item = _pg.PlotItem()
+        self.imv = _pg.ImageView(view=self.plot_item, **kwargs)
+
         #self.image_item = imv.getImageItem()
         self.widget_layout.addWidget(self.imv)
+
+        self.buildMenu()
+        self.addStandardPlugins()
+
+    def addStandardPlugins(self):
+        super().addStandardPlugins()
+        #Add Crosshair
+        self.plugins['Crosshair'] = Crosshair(self)
 
     def setImage(self, im, **kwargs):
         self.data = im
